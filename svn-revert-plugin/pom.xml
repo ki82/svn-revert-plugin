@@ -7,20 +7,19 @@
   	<artifactId>plugin</artifactId>
   	<version>1.421</version>
   </parent>
-  <name>Jenkins Subversion Reverting Plugin</name>
+  <name>Jenkins Subversion Revert Plugin</name>
   <scm>
   	<url>http://github.com/ki82/svn-revert-plugin</url>
-  	<connection>scm:git:git://github.com/ki82/svn-revert-plugin</connection>
-  	<developerConnection>scm:git:git@github.com:ki82/svn-revert-plugin</developerConnection>
+  	<connection>scm:git:git://github.com/ki82/svn-revert-plugin.git</connection>
+  	<developerConnection>scm:git:git@github.com:ki82/svn-revert-plugin.git</developerConnection>
   </scm>
-
-  <repositories>
+   <repositories>
     <repository>
       <id>m.g.o-public</id>
       <url>http://maven.glassfish.org/content/groups/public/</url>
     </repository>
   </repositories>
-    <build>
+  <build>
     <pluginManagement>
         <plugins>
             <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
