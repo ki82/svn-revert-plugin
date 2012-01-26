@@ -44,7 +44,7 @@ public class SvnRevertPublisher extends Notifier {
 
         @Override
         public String getDisplayName() {
-            return "Display name";
+            return "Revert commits that breaks the build";
         }
 
         public String getRevertMessage() {
