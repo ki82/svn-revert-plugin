@@ -12,7 +12,6 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 
 import java.io.IOException;
-import java.io.PrintStream;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -20,9 +19,14 @@ public class SvnRevertPublisher extends Notifier {
 
     private final String revertMessage;
     private SvnReverter reverter = new SvnReverter();
+    private Messenger messenger = new Messenger();
 
     void setReverter(final SvnReverter reverter) {
         this.reverter = reverter;
+    }
+
+    void setMessenger(final Messenger messenger) {
+        this.messenger = messenger;
     }
 
     @Override
@@ -49,14 +53,14 @@ public class SvnRevertPublisher extends Notifier {
             final Launcher launcher,
             final BuildListener buildListener)
                     throws InterruptedException, IOException {
-        final PrintStream logger = buildListener.getLogger();
+        messenger.setLogger(buildListener.getLogger());
 
         if (abstractBuild.getResult() != Result.UNSTABLE) {
-            logger.println("Will not revert since build result is not UNSTABLE");
+            messenger.informBuildStatusNotUnstable();
             return true;
         }
         if (previousBuildStatus(abstractBuild) != Result.SUCCESS) {
-            logger.println("Will not revert since previous build result is not SUCCESS");
+            messenger.informPreviousBuildStatusNotSuccess();
             return true;
         }
 
@@ -86,4 +90,6 @@ public class SvnRevertPublisher extends Notifier {
         }
 
     }
+
+
 }

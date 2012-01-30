@@ -2,7 +2,7 @@ package jenkins.plugins.svn_revert;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,10 +16,13 @@ import java.io.PrintStream;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 
 public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
 
+    private static final Result NOT_SUCCESS = Result.UNSTABLE;
+    private static final Result NOT_UNSTABLE = Result.SUCCESS;
     @Mock
     private AbstractBuild<?, FreeStyleBuild> build;
     @Mock
@@ -32,6 +35,8 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
     private FreeStyleBuild previousBuild;
     @Mock
     private SvnReverter reverter;
+    @Mock
+    private Messenger messenger;
 
     private final SvnRevertPublisher publisher = new SvnRevertPublisher("");
 
@@ -40,6 +45,18 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
         when(listener.getLogger()).thenReturn(logger);
         when(build.getPreviousBuiltBuild()).thenReturn(previousBuild);
         publisher.setReverter(reverter);
+        publisher.setMessenger(messenger);
+    }
+
+    @Test
+    public void loggerShouldBeSetToMessengerWhenPerformingABuild() throws Exception {
+        when(build.getResult()).thenReturn(Result.SUCCESS);
+
+        publisher.perform(build, launcher, listener);
+
+        final InOrder inorder = inOrder(messenger);
+        inorder.verify(messenger).setLogger(logger);
+        inorder.verify(messenger).informBuildStatusNotUnstable();
     }
 
     @Test
@@ -50,12 +67,21 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldLogWhenBuildResultIsSuccess() throws Exception {
-        when(build.getResult()).thenReturn(Result.SUCCESS);
+    public void shouldLogWhenBuildResultIsNotUnstable() throws Exception {
+        when(build.getResult()).thenReturn(NOT_UNSTABLE);
 
         publisher.perform(build, launcher, listener);
 
-        verify(logger).println(anyString());
+        verify(messenger).informBuildStatusNotUnstable();
+    }
+
+    @Test
+    public void shouldLogWhenPreviousBuildResultIsNotSuccess() throws Exception {
+        when(build.getResult()).thenReturn(NOT_SUCCESS);
+
+        publisher.perform(build, launcher, listener);
+
+        verify(messenger).informPreviousBuildStatusNotSuccess();
     }
 
     @Test
@@ -87,9 +113,9 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldNotRevertIfPreviousBuildWasUnstable() throws Exception {
+    public void shouldNotRevertIfPreviousBuildWasNotSuccess() throws Exception {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
-        when(previousBuild.getResult()).thenReturn(Result.UNSTABLE);
+        when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
         publisher.perform(build, launcher, listener);
 
