@@ -60,8 +60,8 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldReturnTrueWhenBuildResultIsSuccess() throws Exception {
-        when(build.getResult()).thenReturn(Result.SUCCESS);
+    public void shouldReturnTrueWhenBuildResultIsNotUnstable() throws Exception {
+        when(build.getResult()).thenReturn(NOT_UNSTABLE);
 
         assertThat(publisher.perform(build, launcher, listener), is(true));
     }
@@ -73,6 +73,14 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
         publisher.perform(build, launcher, listener);
 
         verify(messenger).informBuildStatusNotUnstable();
+    }
+
+    @Test
+    public void shouldReturnTrueWhenPreviousBuildResultIsNotSuccess() throws Exception {
+        when(build.getResult()).thenReturn(Result.UNSTABLE);
+        when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
+
+        assertThat(publisher.perform(build, launcher, listener), is(true));
     }
 
     @Test
@@ -129,6 +137,15 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
         when(reverter.revert()).thenReturn(false);
 
         assertThat(publisher.perform(build, launcher, listener), is(false));
+    }
+
+    @Test
+    public void shouldNotFailBuildIfRevertSucceeds() throws Exception {
+        givenWillRevert();
+
+        when(reverter.revert()).thenReturn(true);
+
+        assertThat(publisher.perform(build, launcher, listener), is(true));
     }
 
     void givenWillRevert() {
