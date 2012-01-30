@@ -161,5 +161,10 @@
       <version>1.37</version>
       <type>hpi</type>
     </dependency>
+    <dependency>
+    	<groupId>org.mockito</groupId>
+    	<artifactId>mockito-all</artifactId>
+    	<version>1.9.0</version>
+    </dependency>
   </dependencies>
 </project>
