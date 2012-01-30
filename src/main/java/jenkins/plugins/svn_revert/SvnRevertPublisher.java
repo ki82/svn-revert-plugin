@@ -64,8 +64,7 @@ public class SvnRevertPublisher extends Notifier {
             return true;
         }
 
-        reverter.revert();
-        return true;
+        return reverter.revert();
     }
 
     private Result previousBuildStatus(final AbstractBuild<?, ?> abstractBuild) {

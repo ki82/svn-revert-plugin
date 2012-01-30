@@ -121,4 +121,18 @@ public class SvnRevertPublisherTest extends AbstractMockitoTestCase {
 
         verify(reverter, never()).revert();
     }
+
+    @Test
+    public void shouldFailBuildIfRevertFails() throws Exception {
+        givenWillRevert();
+
+        when(reverter.revert()).thenReturn(false);
+
+        assertThat(publisher.perform(build, launcher, listener), is(false));
+    }
+
+    void givenWillRevert() {
+        when(build.getResult()).thenReturn(Result.UNSTABLE);
+        when(previousBuild.getResult()).thenReturn(Result.SUCCESS);
+    }
 }

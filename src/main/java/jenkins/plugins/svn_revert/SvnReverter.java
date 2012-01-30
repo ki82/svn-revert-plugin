@@ -6,8 +6,8 @@ public class SvnReverter {
         return new SvnReverter();
     }
 
-    void revert() {
-
+    boolean revert() {
+        return true;
     }
 
 }
