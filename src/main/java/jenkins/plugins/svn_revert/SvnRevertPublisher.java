@@ -1,11 +1,16 @@
 package jenkins.plugins.svn_revert;
 
 import hudson.Extension;
+import hudson.Launcher;
+import hudson.model.BuildListener;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
+
+import java.io.IOException;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -15,12 +20,11 @@ public class SvnRevertPublisher extends Notifier {
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
-        System.out.println("REVERTING");
-        return null;
+        return BuildStepMonitor.BUILD;
     }
 
     public String getRevertMessage() {
-        return "Revert message";
+        return revertMessage;
     }
 
     @DataBoundConstructor
@@ -33,6 +37,13 @@ public class SvnRevertPublisher extends Notifier {
         return (SvnRevertDescriptorImpl)super.getDescriptor();
     }
 
+    @Override
+    public boolean perform(final AbstractBuild<?, ?> abstractBuild,
+                           final Launcher launcher,
+                           final BuildListener buildListener)
+            throws InterruptedException, IOException {
+        return true;
+    }
 
     @Extension
     public static final class SvnRevertDescriptorImpl extends BuildStepDescriptor<Publisher> {
