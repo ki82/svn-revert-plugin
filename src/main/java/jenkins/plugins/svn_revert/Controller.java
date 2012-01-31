@@ -10,7 +10,6 @@ class Controller {
     static boolean perform(final AbstractBuild<?, ?> abstractBuild, final Launcher launcher,
             final BuildListener buildListener, final SvnReverter svnReverter,
             final Messenger messenger) {
-        messenger.setLogger(buildListener.getLogger());
 
         if (abstractBuild.getResult() != Result.UNSTABLE) {
             messenger.informBuildStatusNotUnstable();

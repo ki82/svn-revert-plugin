@@ -8,9 +8,9 @@ class Messenger {
             "Will not revert since build status is not UNSTABLE.";
     static final String PREVIOUS_BUILD_STATUS_NOT_SUCCESS =
             "Will not revert since previous build status is not SUCCESS.";
-    private PrintStream logger;
+    private final PrintStream logger;
 
-    void setLogger(final PrintStream logger) {
+    public Messenger(final PrintStream logger) {
         this.logger = logger;
     }
 

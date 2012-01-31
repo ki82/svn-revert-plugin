@@ -16,8 +16,7 @@ public class MessengerTest extends AbstractMockitoTestCase {
 
     @Before
     public void setup() {
-        messenger = new Messenger();
-        messenger.setLogger(logger);
+        messenger = new Messenger(logger);
     }
 
     @Test

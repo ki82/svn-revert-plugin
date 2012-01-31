@@ -2,7 +2,6 @@ package jenkins.plugins.svn_revert;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,7 +15,6 @@ import java.io.PrintStream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 
 public class ControllerTest extends AbstractMockitoTestCase {
@@ -43,17 +41,6 @@ public class ControllerTest extends AbstractMockitoTestCase {
     public void setUp() {
         when(listener.getLogger()).thenReturn(logger);
         when(build.getPreviousBuiltBuild()).thenReturn(previousBuild);
-    }
-
-    @Test
-    public void loggerShouldBeSetToMessengerWhenPerformingABuild() throws Exception {
-        when(build.getResult()).thenReturn(Result.SUCCESS);
-
-        Controller.perform(build, launcher, listener, reverter, messenger);
-
-        final InOrder inorder = inOrder(messenger);
-        inorder.verify(messenger).setLogger(logger);
-        inorder.verify(messenger).informBuildStatusNotUnstable();
     }
 
     @Test
