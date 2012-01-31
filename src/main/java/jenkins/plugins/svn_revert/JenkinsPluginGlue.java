@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class SvnRevertPublisher extends Notifier {
+public class JenkinsPluginGlue extends Notifier {
 
     private final String revertMessage;
 
@@ -28,7 +28,7 @@ public class SvnRevertPublisher extends Notifier {
     }
 
     @DataBoundConstructor
-    public SvnRevertPublisher(final String revertMessage) {
+    public JenkinsPluginGlue(final String revertMessage) {
         this.revertMessage = revertMessage;
     }
 
