@@ -6,10 +6,12 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
 @SuppressWarnings("rawtypes")
+@Ignore
 public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private SvnReverter reverter;

@@ -1,8 +1,6 @@
 package jenkins.plugins.svn_revert;
 
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.scm.SubversionSCM;
 
 public class SvnReverter {
 
@@ -17,11 +15,11 @@ public class SvnReverter {
 
     boolean revert() {
 
-        final AbstractProject<?, ?> rootProject = build.getProject().getRootProject();
-
-        if (!(rootProject.getScm() instanceof SubversionSCM)) {
-            messenger.informNotSubversionSCM();
-        }
+//        final AbstractProject<?, ?> rootProject = build.getProject().getRootProject();
+//
+//        if (!(rootProject.getScm() instanceof SubversionSCM)) {
+//            messenger.informNotSubversionSCM();
+//        }
         return true;
     }
 
