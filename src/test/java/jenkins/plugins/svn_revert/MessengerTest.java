@@ -30,4 +30,10 @@ public class MessengerTest extends AbstractMockitoTestCase {
         messenger.informPreviousBuildStatusNotSuccess();
         verify(logger).println(Messenger.PREVIOUS_BUILD_STATUS_NOT_SUCCESS);
     }
+
+    @Test
+    public void logsNotSubversionScm() throws Exception {
+        messenger.informNotSubversionSCM();
+        verify(logger).println(Messenger.NOT_SUBVERSION_SCM);
+    }
 }
