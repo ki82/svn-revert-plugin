@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class JenkinsPluginGlue extends Notifier {
+public class JenkinsGlue extends Notifier {
 
     private final String revertMessage;
 
@@ -28,7 +28,7 @@ public class JenkinsPluginGlue extends Notifier {
     }
 
     @DataBoundConstructor
-    public JenkinsPluginGlue(final String revertMessage) {
+    public JenkinsGlue(final String revertMessage) {
         this.revertMessage = revertMessage;
     }
 
