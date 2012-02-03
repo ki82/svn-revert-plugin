@@ -4,6 +4,7 @@ import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 
 class Controller {
 
@@ -11,11 +12,11 @@ class Controller {
             final BuildListener buildListener, final SvnReverter svnReverter,
             final Messenger messenger) {
 
-        if (currentBuildStatus(abstractBuild) != Result.UNSTABLE) {
+        if (!currentBuildUnstable(abstractBuild)) {
             messenger.informBuildStatusNotUnstable();
             return true;
         }
-        if (previousBuildStatus(abstractBuild) != Result.SUCCESS) {
+        if (!previousBuildSuccessful(abstractBuild)) {
             messenger.informPreviousBuildStatusNotSuccess();
             return true;
         }
@@ -23,11 +24,15 @@ class Controller {
         return svnReverter.revert();
     }
 
-    private static Result currentBuildStatus(final AbstractBuild<?, ?> abstractBuild) {
-        return abstractBuild.getResult();
+    private static boolean currentBuildUnstable(final AbstractBuild<?, ?> abstractBuild) {
+        return abstractBuild.getResult() == Result.UNSTABLE;
     }
 
-    private static Result previousBuildStatus(final AbstractBuild<?, ?> abstractBuild) {
-        return abstractBuild.getPreviousBuiltBuild().getResult();
+    private static boolean previousBuildSuccessful(final AbstractBuild<?, ?> abstractBuild) {
+        final Run<?, ?> previousBuiltBuild = abstractBuild.getPreviousBuiltBuild();
+        if (previousBuiltBuild != null) {
+            return previousBuiltBuild.getResult() == Result.SUCCESS;
+        }
+        return false;
     }
 }

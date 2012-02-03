@@ -132,6 +132,14 @@ public class ControllerTest extends AbstractMockitoTestCase {
         assertThat(Controller.perform(build, launcher, listener, reverter, messenger), is(true));
     }
 
+    @Test
+    public void shouldNotFailWhenFirstBuildIsUnstable() throws Exception {
+        when(build.getResult()).thenReturn(Result.UNSTABLE);
+        when(build.getPreviousBuiltBuild()).thenReturn(null);
+
+        assertThat(Controller.perform(build, launcher, listener, reverter, messenger), is(true));
+    }
+
     void givenWillRevert() {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(Result.SUCCESS);
