@@ -11,7 +11,7 @@ class Controller {
             final BuildListener buildListener, final SvnReverter svnReverter,
             final Messenger messenger) {
 
-        if (abstractBuild.getResult() != Result.UNSTABLE) {
+        if (currentBuildStatus(abstractBuild) != Result.UNSTABLE) {
             messenger.informBuildStatusNotUnstable();
             return true;
         }
@@ -21,6 +21,10 @@ class Controller {
         }
 
         return svnReverter.revert();
+    }
+
+    private static Result currentBuildStatus(final AbstractBuild<?, ?> abstractBuild) {
+        return abstractBuild.getResult();
     }
 
     private static Result previousBuildStatus(final AbstractBuild<?, ?> abstractBuild) {
