@@ -21,6 +21,7 @@ public class SvnReverter {
         if (!(rootProject.getScm() instanceof SubversionSCM)) {
             messenger.informNotSubversionSCM();
         }
+
         return true;
     }
 
