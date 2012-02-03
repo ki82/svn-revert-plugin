@@ -12,11 +12,11 @@ class Controller {
             final BuildListener buildListener, final SvnReverter svnReverter,
             final Messenger messenger) {
 
-        if (!currentBuildUnstable(abstractBuild)) {
+        if (currentBuildNotUnstable(abstractBuild)) {
             messenger.informBuildStatusNotUnstable();
             return true;
         }
-        if (!previousBuildSuccessful(abstractBuild)) {
+        if (previousBuildNotSuccessful(abstractBuild)) {
             messenger.informPreviousBuildStatusNotSuccess();
             return true;
         }
@@ -24,8 +24,12 @@ class Controller {
         return svnReverter.revert();
     }
 
-    private static boolean currentBuildUnstable(final AbstractBuild<?, ?> abstractBuild) {
-        return abstractBuild.getResult() == Result.UNSTABLE;
+    private static boolean currentBuildNotUnstable(final AbstractBuild<?, ?> abstractBuild) {
+        return abstractBuild.getResult() != Result.UNSTABLE;
+    }
+
+    private static boolean previousBuildNotSuccessful(final AbstractBuild<?, ?> abstractBuild) {
+        return !previousBuildSuccessful(abstractBuild);
     }
 
     private static boolean previousBuildSuccessful(final AbstractBuild<?, ?> abstractBuild) {
