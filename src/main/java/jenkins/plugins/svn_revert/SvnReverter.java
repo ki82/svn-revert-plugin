@@ -16,7 +16,6 @@ public class SvnReverter {
     }
 
     boolean revert() {
-
         final AbstractProject<?, ?> rootProject = build.getProject().getRootProject();
 
         if (!(rootProject.getScm() instanceof SubversionSCM)) {
