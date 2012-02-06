@@ -4,7 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
 
-public class SvnReverter {
+class SvnReverter {
 
     private final Messenger messenger;
     private final AbstractBuild<?, ?> build;
