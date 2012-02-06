@@ -4,7 +4,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.scm.SubversionSCM;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +24,6 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private AbstractProject rootProject;
     @Mock
     private AbstractProject project;
-    @Mock
-    private SubversionSCM subversionScm;
 
     @Before
     public void setup() {
