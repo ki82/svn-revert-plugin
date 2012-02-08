@@ -57,10 +57,20 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldLogIfNoSvnAuthAvailable() throws Exception {
-        when(rootProject.getScm()).thenReturn(subversionScm);
-        when(subversionScm.getDescriptor()).thenReturn(subversionDescriptor);
+        givenSubversionScmWithNoAuth();
         reverter.revert();
         verify(messenger).informNoSvnAuthProvider();
+    }
+
+    @Test
+    public void shouldFailIfNoSvnAuthAvailable() throws Exception {
+        givenSubversionScmWithNoAuth();
+        assertThat(reverter.revert(), is(false));
+    }
+
+    public void givenSubversionScmWithNoAuth() {
+        when(rootProject.getScm()).thenReturn(subversionScm);
+        when(subversionScm.getDescriptor()).thenReturn(subversionDescriptor);
     }
 
 }

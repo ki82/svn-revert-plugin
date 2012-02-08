@@ -10,6 +10,7 @@ class Messenger {
             "Will not revert since previous build status is not SUCCESS.";
     static final String NOT_SUBVERSION_SCM =
             "The Subversion Revert Plugin can only be used with Subversion SCM.";
+    static final String NO_SVN_AUTH_PROVIDER = "No Subversion credentials available.";
     private final PrintStream logger;
 
     public Messenger(final PrintStream logger) {
@@ -29,7 +30,7 @@ class Messenger {
     }
 
     void informNoSvnAuthProvider() {
-        // TODO Auto-generated method stub
+        logger.println(NO_SVN_AUTH_PROVIDER);
     }
 
 }

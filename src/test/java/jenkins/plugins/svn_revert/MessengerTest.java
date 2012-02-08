@@ -36,4 +36,10 @@ public class MessengerTest extends AbstractMockitoTestCase {
         messenger.informNotSubversionSCM();
         verify(logger).println(Messenger.NOT_SUBVERSION_SCM);
     }
+
+    @Test
+    public void logsNoSvnAuthProvider() throws Exception {
+        messenger.informNoSvnAuthProvider();
+        verify(logger).println(Messenger.NO_SVN_AUTH_PROVIDER);
+    }
 }

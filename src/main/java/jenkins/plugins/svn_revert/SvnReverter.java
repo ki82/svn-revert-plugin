@@ -34,6 +34,7 @@ class SvnReverter {
 
         if (sap == null) {
             messenger.informNoSvnAuthProvider();
+            return false;
         }
 
         return true;
