@@ -83,6 +83,13 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         verify(messenger).printStackTraceFor(ioException);
     }
 
+    @Test(expected=RuntimeException.class)
+    public void shouldNotCatchRuntimeExceptionIfThrown() throws Exception {
+        givenSubversionScmWithAuth();
+        when(build.getEnvironment(listener)).thenThrow(new RuntimeException());
+        reverter.revert();
+    }
+
     private void givenSubversionScmWithAuth() throws Exception {
         when(rootProject.getScm()).thenReturn(subversionScm);
         when(svnFactory.create(project, subversionScm)).thenReturn(clientManager);
