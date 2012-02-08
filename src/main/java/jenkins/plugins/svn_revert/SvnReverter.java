@@ -5,13 +5,14 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
 
-import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
 
 class SvnReverter {
 
     private final Messenger messenger;
     private final AbstractBuild<?, ?> build;
     private final BuildListener listener;
+    private SVNClientManager svnClientManager;
 
     SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener, final Messenger messenger) {
         this.build = build;
@@ -22,22 +23,24 @@ class SvnReverter {
     boolean revert() {
         final AbstractProject<?, ?> rootProject = build.getProject().getRootProject();
 
+        try {
+            return revertAndCommit(rootProject);
+        } catch (final NoSvnAuthException e) {
+            messenger.informNoSvnAuthProvider();
+            return false;
+        }
+    }
+
+    public boolean revertAndCommit(final AbstractProject<?, ?> rootProject) throws NoSvnAuthException {
         if (!(rootProject.getScm() instanceof SubversionSCM)) {
             messenger.informNotSubversionSCM();
             return true;
         }
 
-        final SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
-
-        final ISVNAuthenticationProvider sap =
-                scm.getDescriptor().createAuthenticationProvider(rootProject);
-
-        if (sap == null) {
-            messenger.informNoSvnAuthProvider();
-            return false;
-        }
-
+        final SubversionSCM subversionScm = SubversionSCM.class.cast(rootProject.getScm());
+        svnClientManager = SvnClientManagerFactory.create(rootProject, subversionScm);
         return true;
     }
+
 
 }
