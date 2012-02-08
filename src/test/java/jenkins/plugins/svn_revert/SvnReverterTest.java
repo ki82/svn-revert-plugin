@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.scm.SubversionSCM;
+import hudson.scm.SubversionSCM.DescriptorImpl;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +31,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private AbstractProject project;
     @Mock
     private BuildListener listener;
+    @Mock
+    private SubversionSCM subversionScm;
+    @Mock
+    private DescriptorImpl subversionDescriptor;
 
     @Before
     public void setup() {
@@ -48,4 +54,13 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     public void shouldReturnTrueIfRepoIsNotSubversion() throws Exception {
         assertThat(reverter.revert(), is(true));
     }
+
+    @Test
+    public void shouldLogIfNoSvnAuthAvailable() throws Exception {
+        when(rootProject.getScm()).thenReturn(subversionScm);
+        when(subversionScm.getDescriptor()).thenReturn(subversionDescriptor);
+        reverter.revert();
+        verify(messenger).informNoSvnAuthProvider();
+    }
+
 }

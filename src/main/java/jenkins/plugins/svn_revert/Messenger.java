@@ -28,4 +28,8 @@ class Messenger {
         logger.println(NOT_SUBVERSION_SCM);
     }
 
+    void informNoSvnAuthProvider() {
+        // TODO Auto-generated method stub
+    }
+
 }

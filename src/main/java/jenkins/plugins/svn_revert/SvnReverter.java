@@ -5,6 +5,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
 
+import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
+
 class SvnReverter {
 
     private final Messenger messenger;
@@ -22,6 +24,16 @@ class SvnReverter {
 
         if (!(rootProject.getScm() instanceof SubversionSCM)) {
             messenger.informNotSubversionSCM();
+            return true;
+        }
+
+        final SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
+
+        final ISVNAuthenticationProvider sap =
+                scm.getDescriptor().createAuthenticationProvider(rootProject);
+
+        if (sap == null) {
+            messenger.informNoSvnAuthProvider();
         }
 
         return true;
