@@ -1,5 +1,7 @@
 package jenkins.plugins.svn_revert;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import hudson.model.AbstractBuild;
@@ -39,4 +41,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         verify(messenger).informNotSubversionSCM();
     }
 
+    @Test
+    public void shouldReturnTrueIfRepoIsNotSubversion() throws Exception {
+        assertThat(reverter.revert(), is(true));
+    }
 }
