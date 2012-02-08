@@ -1,7 +1,6 @@
 package jenkins.plugins.svn_revert;
 
 import hudson.Launcher;
-import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -9,8 +8,7 @@ import hudson.model.Run;
 class Controller {
 
     static boolean perform(final AbstractBuild<?, ?> abstractBuild, final Launcher launcher,
-            final BuildListener buildListener, final SvnReverter svnReverter,
-            final Messenger messenger) {
+            final SvnReverter svnReverter, final Messenger messenger) {
 
         if (currentBuildNotUnstable(abstractBuild)) {
             messenger.informBuildStatusNotUnstable();

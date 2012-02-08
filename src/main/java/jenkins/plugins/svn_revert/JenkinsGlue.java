@@ -39,12 +39,11 @@ public class JenkinsGlue extends Notifier {
 
     @Override
     public boolean perform(final AbstractBuild<?, ?> abstractBuild,
-            final Launcher launcher,
-            final BuildListener buildListener)
-                    throws InterruptedException, IOException {
-        final Messenger messenger = new Messenger(buildListener.getLogger());
-        return Controller.perform(abstractBuild, launcher, buildListener,
-                new SvnReverter(abstractBuild, messenger), messenger);
+            final Launcher launcher, final BuildListener listener)
+    throws InterruptedException, IOException {
+        final Messenger messenger = new Messenger(listener.getLogger());
+        return Controller.perform(abstractBuild, launcher,
+                new SvnReverter(abstractBuild, listener, messenger), messenger);
     }
 
     @Extension
