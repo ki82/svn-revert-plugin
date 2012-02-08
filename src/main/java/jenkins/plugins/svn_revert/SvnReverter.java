@@ -1,11 +1,20 @@
 package jenkins.plugins.svn_revert;
 
+import hudson.EnvVars;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
+import hudson.scm.SubversionSCM.ModuleLocation;
 
+import java.io.File;
+import java.util.Collections;
+
+import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNDiffClient;
+import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNRevisionRange;
 
 class SvnReverter {
 
@@ -31,10 +40,13 @@ class SvnReverter {
         } catch (final NoSvnAuthException e) {
             messenger.informNoSvnAuthProvider();
             return false;
+        } catch (final Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    public boolean revertAndCommit(final AbstractProject<?, ?> rootProject) throws NoSvnAuthException {
+    public boolean revertAndCommit(final AbstractProject<?, ?> rootProject) throws NoSvnAuthException, Exception {
         if (!(rootProject.getScm() instanceof SubversionSCM)) {
             messenger.informNotSubversionSCM();
             return true;
@@ -42,6 +54,18 @@ class SvnReverter {
 
         final SubversionSCM subversionScm = SubversionSCM.class.cast(rootProject.getScm());
         svnClientManager = svnFactory.create(rootProject, subversionScm);
+        final SVNDiffClient diffClient = svnClientManager.getDiffClient();
+
+        final EnvVars envVars = build.getEnvironment(listener);
+        final int revisionNumber = Integer.parseInt(envVars.get("SVN_REVISION"));
+        final SVNRevisionRange range = new SVNRevisionRange(
+                SVNRevision.create(revisionNumber), SVNRevision.create(revisionNumber - 1));
+
+        final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
+
+        diffClient.doMerge(moduleLocation.getSVNURL(), SVNRevision.create(revisionNumber),
+                Collections.singleton(range), new File(moduleLocation.getLocalDir()),
+                SVNDepth.INFINITY, true, false, false, false);
         return true;
     }
 
