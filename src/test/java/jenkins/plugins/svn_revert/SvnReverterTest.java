@@ -9,10 +9,13 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
 
 @SuppressWarnings("rawtypes")
 public class SvnReverterTest extends AbstractMockitoTestCase {
@@ -35,6 +38,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private SubversionSCM subversionScm;
     @Mock
     private SvnClientManagerFactory svnFactory;
+    @Mock
+    private SVNClientManager clientManager;
+
+    private final IOException ioException = new IOException();
 
     @Before
     public void setup() {
@@ -66,6 +73,19 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     public void shouldFailIfNoSvnAuthAvailable() throws Exception {
         givenSubversionScmWithNoAuth();
         assertThat(reverter.revert(), is(false));
+    }
+
+    @Test
+    public void shouldLogExceptionIfThrown() throws Exception {
+        givenSubversionScmWithAuth();
+        when(build.getEnvironment(listener)).thenThrow(ioException);
+        reverter.revert();
+        verify(messenger).printStackTraceFor(ioException);
+    }
+
+    private void givenSubversionScmWithAuth() throws Exception {
+        when(rootProject.getScm()).thenReturn(subversionScm);
+        when(svnFactory.create(project, subversionScm)).thenReturn(clientManager);
     }
 
     public void givenSubversionScmWithNoAuth() throws Exception {
