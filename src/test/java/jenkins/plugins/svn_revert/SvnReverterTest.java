@@ -8,10 +8,10 @@ import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
-import hudson.scm.SubversionSCM.DescriptorImpl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 
 @SuppressWarnings("rawtypes")
@@ -34,14 +34,14 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Mock
     private SubversionSCM subversionScm;
     @Mock
-    private DescriptorImpl subversionDescriptor;
+    private SvnClientManagerFactory svnFactory;
 
     @Before
     public void setup() {
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
-        reverter = new SvnReverter(build, listener, messenger);
+        reverter = new SvnReverter(build, listener, messenger, svnFactory);
     }
 
     @Test
@@ -68,9 +68,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         assertThat(reverter.revert(), is(false));
     }
 
-    public void givenSubversionScmWithNoAuth() {
+    public void givenSubversionScmWithNoAuth() throws Exception {
         when(rootProject.getScm()).thenReturn(subversionScm);
-        when(subversionScm.getDescriptor()).thenReturn(subversionDescriptor);
+        when(svnFactory.create(Matchers.<AbstractProject>any(), Matchers.<SubversionSCM>any()))
+        .thenThrow(new NoSvnAuthException());
     }
 
 }

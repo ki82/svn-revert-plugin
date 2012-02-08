@@ -8,7 +8,7 @@ import hudson.model.Run;
 class Controller {
 
     static boolean perform(final AbstractBuild<?, ?> abstractBuild, final Launcher launcher,
-            final SvnReverter svnReverter, final Messenger messenger) {
+            final Messenger messenger, final SvnReverter svnReverter) {
 
         if (currentBuildNotUnstable(abstractBuild)) {
             messenger.informBuildStatusNotUnstable();

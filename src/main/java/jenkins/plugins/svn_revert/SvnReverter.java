@@ -13,11 +13,14 @@ class SvnReverter {
     private final AbstractBuild<?, ?> build;
     private final BuildListener listener;
     private SVNClientManager svnClientManager;
+    private final SvnClientManagerFactory svnFactory;
 
-    SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener, final Messenger messenger) {
+    SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
+            final Messenger messenger, final SvnClientManagerFactory svnFactory) {
         this.build = build;
         this.listener = listener;
         this.messenger = messenger;
+        this.svnFactory = svnFactory;
     }
 
     boolean revert() {
@@ -38,7 +41,7 @@ class SvnReverter {
         }
 
         final SubversionSCM subversionScm = SubversionSCM.class.cast(rootProject.getScm());
-        svnClientManager = SvnClientManagerFactory.create(rootProject, subversionScm);
+        svnClientManager = svnFactory.create(rootProject, subversionScm);
         return true;
     }
 

@@ -42,8 +42,8 @@ public class JenkinsGlue extends Notifier {
             final Launcher launcher, final BuildListener listener)
     throws InterruptedException, IOException {
         final Messenger messenger = new Messenger(listener.getLogger());
-        return Controller.perform(abstractBuild, launcher,
-                new SvnReverter(abstractBuild, listener, messenger), messenger);
+        return Controller.perform(abstractBuild, launcher, messenger,
+                new SvnReverter(abstractBuild, listener, messenger, new SvnClientManagerFactory()));
     }
 
     @Extension

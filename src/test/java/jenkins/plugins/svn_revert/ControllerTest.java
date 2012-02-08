@@ -47,14 +47,14 @@ public class ControllerTest extends AbstractMockitoTestCase {
     public void shouldReturnTrueWhenBuildResultIsNotUnstable() throws Exception {
         when(build.getResult()).thenReturn(NOT_UNSTABLE);
 
-        assertThat(Controller.perform(build, launcher, reverter, messenger), is(true));
+        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
     }
 
     @Test
     public void shouldLogWhenBuildResultIsNotUnstable() throws Exception {
         when(build.getResult()).thenReturn(NOT_UNSTABLE);
 
-        Controller.perform(build, launcher, reverter, messenger);
+        Controller.perform(build, launcher, messenger, reverter);
 
         verify(messenger).informBuildStatusNotUnstable();
     }
@@ -64,14 +64,14 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
-        assertThat(Controller.perform(build, launcher, reverter, messenger), is(true));
+        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
     }
 
     @Test
     public void shouldLogWhenPreviousBuildResultIsNotSuccess() throws Exception {
         when(build.getResult()).thenReturn(NOT_SUCCESS);
 
-        Controller.perform(build, launcher, reverter, messenger);
+        Controller.perform(build, launcher, messenger, reverter);
 
         verify(messenger).informPreviousBuildStatusNotSuccess();
     }
@@ -80,7 +80,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
     public void shouldNotRevertWhenBuildResultIsSuccess() throws Exception {
         when(build.getResult()).thenReturn(Result.SUCCESS);
 
-        Controller.perform(build, launcher, reverter, messenger);
+        Controller.perform(build, launcher, messenger, reverter);
 
         verify(reverter, never()).revert();
     }
@@ -89,7 +89,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
     public void shouldNotRevertWhenBuildResultIsFailure() throws Exception {
         when(build.getResult()).thenReturn(Result.FAILURE);
 
-        Controller.perform(build, launcher, reverter, messenger);
+        Controller.perform(build, launcher, messenger, reverter);
 
         verify(reverter, never()).revert();
     }
@@ -99,7 +99,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(Result.SUCCESS);
 
-        Controller.perform(build, launcher, reverter, messenger);
+        Controller.perform(build, launcher, messenger, reverter);
 
         verify(reverter).revert();
     }
@@ -109,7 +109,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
-        Controller.perform(build, launcher, reverter, messenger);
+        Controller.perform(build, launcher, messenger, reverter);
 
         verify(reverter, never()).revert();
     }
@@ -120,7 +120,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
 
         when(reverter.revert()).thenReturn(false);
 
-        assertThat(Controller.perform(build, launcher, reverter, messenger), is(false));
+        assertThat(Controller.perform(build, launcher, messenger, reverter), is(false));
     }
 
     @Test
@@ -129,7 +129,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
 
         when(reverter.revert()).thenReturn(true);
 
-        assertThat(Controller.perform(build, launcher, reverter, messenger), is(true));
+        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
     }
 
     @Test
@@ -137,7 +137,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(build.getPreviousBuiltBuild()).thenReturn(null);
 
-        assertThat(Controller.perform(build, launcher, reverter, messenger), is(true));
+        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
     }
 
     void givenWillRevert() {
