@@ -12,6 +12,8 @@ public class MessengerTest extends AbstractMockitoTestCase {
 
     @Mock
     private PrintStream logger;
+    @Mock
+    private Exception exception;
     private Messenger messenger;
 
     @Before
@@ -41,5 +43,11 @@ public class MessengerTest extends AbstractMockitoTestCase {
     public void logsNoSvnAuthProvider() throws Exception {
         messenger.informNoSvnAuthProvider();
         verify(logger).println(Messenger.NO_SVN_AUTH_PROVIDER);
+    }
+
+    @Test
+    public void printsStackTrace() throws Exception {
+        messenger.printStackTraceFor(exception);
+        verify(exception).printStackTrace(logger);
     }
 }
