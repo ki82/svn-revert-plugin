@@ -8,9 +8,11 @@ import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 
 import org.tmatesoft.svn.core.SVNDepth;
+import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNDiffClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
@@ -37,16 +39,19 @@ class SvnReverter {
 
         try {
             return revertAndCommit(rootProject);
+        } catch (final RuntimeException e) {
+            throw e;
         } catch (final NoSvnAuthException e) {
             messenger.informNoSvnAuthProvider();
             return false;
         } catch (final Exception e) {
-            e.printStackTrace();
+            messenger.printStackTraceFor(e);
             return false;
         }
     }
 
-    public boolean revertAndCommit(final AbstractProject<?, ?> rootProject) throws NoSvnAuthException, Exception {
+    private boolean revertAndCommit(final AbstractProject<?, ?> rootProject)
+    throws NoSvnAuthException, IOException, InterruptedException, SVNException {
         if (!(rootProject.getScm() instanceof SubversionSCM)) {
             messenger.informNotSubversionSCM();
             return true;
@@ -54,7 +59,6 @@ class SvnReverter {
 
         final SubversionSCM subversionScm = SubversionSCM.class.cast(rootProject.getScm());
         svnClientManager = svnFactory.create(rootProject, subversionScm);
-        final SVNDiffClient diffClient = svnClientManager.getDiffClient();
 
         final EnvVars envVars = build.getEnvironment(listener);
         final int revisionNumber = Integer.parseInt(envVars.get("SVN_REVISION"));
@@ -63,6 +67,7 @@ class SvnReverter {
 
         final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
 
+        final SVNDiffClient diffClient = svnClientManager.getDiffClient();
         diffClient.doMerge(moduleLocation.getSVNURL(), SVNRevision.create(revisionNumber),
                 Collections.singleton(range), new File(moduleLocation.getLocalDir()),
                 SVNDepth.INFINITY, true, false, false, false);

@@ -33,4 +33,8 @@ class Messenger {
         logger.println(NO_SVN_AUTH_PROVIDER);
     }
 
+    public void printStackTraceFor(final Exception exception) {
+        exception.printStackTrace(logger);
+    }
+
 }
