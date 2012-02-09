@@ -1,6 +1,7 @@
 package jenkins.plugins.svn_revert;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 
 import org.tmatesoft.svn.core.SVNDepth;
@@ -20,20 +21,22 @@ class SvnKitClient {
         this.clientManager = clientManager;
     }
 
-    void merge(final int fromRevision, final int toRevision, final SVNURL svnurl, final File file)
-            throws SVNException {
+    void merge(final int fromRevision, final int toRevision, final SVNURL svnurl,
+            final File moduleDirectory)
+    throws SVNException, IOException {
         final SVNRevisionRange range = new SVNRevisionRange(
                 SVNRevision.create(fromRevision), SVNRevision.create(toRevision));
         final SVNDiffClient diffClient = clientManager.getDiffClient();
         diffClient.doMerge(svnurl, SVNRevision.create(fromRevision),
-                Collections.singleton(range), file, SVNDepth.INFINITY,
+                Collections.singleton(range), moduleDirectory.getCanonicalFile(), SVNDepth.INFINITY,
                 true, false, false, false);
     }
 
     @SuppressWarnings("deprecation")
-    void commit(final File workspace) throws SVNException {
+    void commit(final File moduleDirectory) throws SVNException, IOException {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
-        commitClient.doCommit(new File[] { workspace }, true, "Reverted", false, true);
+        commitClient.doCommit(new File[] { moduleDirectory.getCanonicalFile() }, true, "Reverted",
+                false, true);
     }
 
 

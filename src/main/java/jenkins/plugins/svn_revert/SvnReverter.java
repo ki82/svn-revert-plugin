@@ -55,9 +55,9 @@ class SvnReverter {
         final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
 
         final File moduleDir = new File(build.getWorkspace() + File.separator + moduleLocation.getLocalDir());
-        svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleLocation.getSVNURL(), moduleDir.getCanonicalFile());
+        svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleLocation.getSVNURL(), moduleDir);
 
-        svnKitClient.commit(moduleDir.getCanonicalFile());
+        svnKitClient.commit(moduleDir);
         return true;
     }
 
