@@ -43,7 +43,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenJobWithSubversionScm();
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
-        System.out.println(currentBuild.getLog(LOG_LIMIT).toString());
         assertBuildStatus(Result.UNSTABLE, currentBuild);
     }
 
