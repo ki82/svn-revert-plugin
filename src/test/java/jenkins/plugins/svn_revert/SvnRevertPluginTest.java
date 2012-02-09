@@ -42,8 +42,10 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     public void testShouldRevertWhenBuildStatusChangesToUnstable() throws Exception {
         givenJobWithSubversionScm();
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+        final FreeStyleBuild revertedBuild = scheduleBuild();
 
         assertBuildStatus(Result.UNSTABLE, currentBuild);
+        assertEquals("6", revertedBuild.getEnvironment().get("SVN_REVISION"));
     }
 
     private FreeStyleBuild givenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,

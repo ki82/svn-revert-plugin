@@ -14,6 +14,7 @@ import java.util.Collections;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNCommitClient;
 import org.tmatesoft.svn.core.wc.SVNDiffClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNRevisionRange;
@@ -68,10 +69,12 @@ class SvnReverter {
         final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
 
         final SVNDiffClient diffClient = svnClientManager.getDiffClient();
+        final File moduleRoot = new File(build.getModuleRoot().absolutize().toString());
         diffClient.doMerge(moduleLocation.getSVNURL(), SVNRevision.create(revisionNumber),
-                Collections.singleton(range),
-                new File(build.getModuleRoot().absolutize().toString()),
-                SVNDepth.INFINITY, true, false, false, false);
+                Collections.singleton(range), moduleRoot, SVNDepth.INFINITY,
+                true, false, false, false);
+        final SVNCommitClient commitClient = svnClientManager.getCommitClient();
+        commitClient.doCommit(new File[] { moduleRoot }, true, "Reverted", false, true);
         return true;
     }
 
