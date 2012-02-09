@@ -8,7 +8,7 @@ import hudson.scm.SubversionSCM;
 
 class Bouncer {
 
-    static boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher,
+    static boolean throwOutIfUnstable(final AbstractBuild<?, ?> build, final Launcher launcher,
             final Messenger messenger, final SvnReverter svnReverter) {
 
         if (isNotSubversionJob(build)) {
