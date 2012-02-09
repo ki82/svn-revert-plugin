@@ -44,7 +44,6 @@ class SvnReverter {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private boolean revertAndCommit(final AbstractProject<?, ?> rootProject,
             final SubversionSCM subversionScm)
     throws NoSvnAuthException, IOException, InterruptedException, SVNException {
@@ -55,10 +54,10 @@ class SvnReverter {
 
         final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
 
-        final File workspace = new File(build.getModuleRoot().absolutize().toString());
-        svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleLocation.getSVNURL(), workspace);
+        final File moduleDir = new File(build.getWorkspace() + File.separator + moduleLocation.getLocalDir());
+        svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleLocation.getSVNURL(), moduleDir.getCanonicalFile());
 
-        svnKitClient.commit(workspace);
+        svnKitClient.commit(moduleDir.getCanonicalFile());
         return true;
     }
 
