@@ -27,11 +27,11 @@ class Bouncer {
         return svnReverter.revert(getSubversionScm(build));
     }
 
-    public static SubversionSCM getSubversionScm(final AbstractBuild<?, ?> abstractBuild) {
+    private static SubversionSCM getSubversionScm(final AbstractBuild<?, ?> abstractBuild) {
         return SubversionSCM.class.cast(abstractBuild.getProject().getRootProject().getScm());
     }
 
-    public static boolean isNotSubversionJob(final AbstractBuild<?, ?> abstractBuild) {
+    private static boolean isNotSubversionJob(final AbstractBuild<?, ?> abstractBuild) {
         return !(abstractBuild.getProject().getRootProject().getScm() instanceof SubversionSCM);
     }
 
