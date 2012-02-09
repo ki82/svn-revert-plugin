@@ -61,7 +61,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
-
         final String log = currentBuild.getLog(LOG_LIMIT).toString();
         System.out.println(log);
         assertThat(log, containsString(svnUrl));
