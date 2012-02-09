@@ -8,7 +8,8 @@ import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.scm.NullSCM;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
@@ -16,35 +17,46 @@ import org.jvnet.hudson.test.MockBuilder;
 public class SvnRevertPluginTest extends HudsonTestCase {
 
     private static final int LOG_LIMIT = 1000;
+    private FreeStyleProject job;
 
     public void testShouldNotRevertWhenBuildStatusIsSuccess() throws Exception {
-        final FreeStyleProject job = createFreeStyleProject();
-        job.setScm(new NullSCM());
-        job.getPublishersList().add(new JenkinsGlue(""));
+        givenJobWithNullScm();
 
-        final FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        final FreeStyleBuild build = scheduleBuild();
 
-        final List<String> log = build.getLog(LOG_LIMIT);
-        System.out.println(log.toString());
-        assertEquals(log.toString(), "[Started by user SYSTEM, Will not revert since build status is not UNSTABLE., Finished: SUCCESS]");
+        assertThat(build.getLog(LOG_LIMIT).toString(),
+                containsString("Will not revert since build status is not UNSTABLE"));
         assertBuildStatus(Result.SUCCESS, build);
     }
 
     public void testShouldNotRevertWhenNotSubversionSCM() throws Exception {
-        final FreeStyleProject job = createFreeStyleProject("no-scm-job");
-        job.setScm(new NullSCM());
-        job.getPublishersList().add(new JenkinsGlue(""));
+        givenJobWithNullScm();
 
-        job.scheduleBuild2(0, new Cause.UserCause()).get();
+        scheduleBuild();
 
-        job.getBuildersList().add(new MockBuilder(Result.UNSTABLE));
-        final FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        givenJobStatusIsUnstable();
 
-        final List<String> log = build.getLog(LOG_LIMIT);
-        System.out.println(log.toString());
-        assertThat(log.toString(), containsString("The Subversion Revert Plugin can only be used with Subversion SCM"));
+        final FreeStyleBuild build = scheduleBuild();
+
+        assertThat(build.getLog(LOG_LIMIT).toString(),
+                containsString("The Subversion Revert Plugin can only be used with Subversion SCM"));
         assertBuildStatus(Result.UNSTABLE, build);
 
+    }
+
+    private void givenJobStatusIsUnstable() throws IOException {
+        job.getBuildersList().add(new MockBuilder(Result.UNSTABLE));
+    }
+
+    private void givenJobWithNullScm() throws IOException {
+        job = createFreeStyleProject("no-scm-job");
+        job.setScm(new NullSCM());
+        job.getPublishersList().add(new JenkinsGlue(""));
+    }
+
+    private FreeStyleBuild scheduleBuild() throws InterruptedException,
+    ExecutionException {
+        return job.scheduleBuild2(0, new Cause.UserCause()).get();
     }
 
 }
