@@ -4,22 +4,35 @@ import hudson.Launcher;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
+import hudson.scm.SubversionSCM;
 
 class Controller {
 
-    static boolean perform(final AbstractBuild<?, ?> abstractBuild, final Launcher launcher,
+    static boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher,
             final Messenger messenger, final SvnReverter svnReverter) {
 
-        if (currentBuildNotUnstable(abstractBuild)) {
+        if (isNotSubversionJob(build)) {
+            messenger.informNotSubversionSCM();
+            return true;
+        }
+        if (currentBuildNotUnstable(build)) {
             messenger.informBuildStatusNotUnstable();
             return true;
         }
-        if (previousBuildNotSuccessful(abstractBuild)) {
+        if (previousBuildNotSuccessful(build)) {
             messenger.informPreviousBuildStatusNotSuccess();
             return true;
         }
 
-        return svnReverter.revert();
+        return svnReverter.revert(getSubversionScm(build));
+    }
+
+    public static SubversionSCM getSubversionScm(final AbstractBuild<?, ?> abstractBuild) {
+        return SubversionSCM.class.cast(abstractBuild.getProject().getRootProject().getScm());
+    }
+
+    public static boolean isNotSubversionJob(final AbstractBuild<?, ?> abstractBuild) {
+        return !(abstractBuild.getProject().getRootProject().getScm() instanceof SubversionSCM);
     }
 
     private static boolean currentBuildNotUnstable(final AbstractBuild<?, ?> abstractBuild) {

@@ -35,11 +35,11 @@ class SvnReverter {
         this.svnFactory = svnFactory;
     }
 
-    boolean revert() {
+    boolean revert(final SubversionSCM subversionScm) {
         final AbstractProject<?, ?> rootProject = build.getProject().getRootProject();
 
         try {
-            return revertAndCommit(rootProject);
+            return revertAndCommit(rootProject, subversionScm);
         } catch (final RuntimeException e) {
             throw e;
         } catch (final NoSvnAuthException e) {
@@ -51,14 +51,10 @@ class SvnReverter {
         }
     }
 
-    private boolean revertAndCommit(final AbstractProject<?, ?> rootProject)
+    @SuppressWarnings("deprecation")
+    private boolean revertAndCommit(final AbstractProject<?, ?> rootProject,
+            final SubversionSCM subversionScm)
     throws NoSvnAuthException, IOException, InterruptedException, SVNException {
-        if (!(rootProject.getScm() instanceof SubversionSCM)) {
-            messenger.informNotSubversionSCM();
-            return true;
-        }
-
-        final SubversionSCM subversionScm = SubversionSCM.class.cast(rootProject.getScm());
         svnClientManager = svnFactory.create(rootProject, subversionScm);
 
         final EnvVars envVars = build.getEnvironment(listener);

@@ -52,51 +52,38 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldLogIfRepoIsNotSubversion() throws Exception {
-        reverter.revert();
-        verify(messenger).informNotSubversionSCM();
-    }
-
-    @Test
-    public void shouldReturnTrueIfRepoIsNotSubversion() throws Exception {
-        assertThat(reverter.revert(), is(true));
-    }
-
-    @Test
     public void shouldLogIfNoSvnAuthAvailable() throws Exception {
-        givenSubversionScmWithNoAuth();
-        reverter.revert();
+        givenScmWithNoAuth();
+        reverter.revert(subversionScm);
         verify(messenger).informNoSvnAuthProvider();
     }
 
     @Test
     public void shouldFailIfNoSvnAuthAvailable() throws Exception {
-        givenSubversionScmWithNoAuth();
-        assertThat(reverter.revert(), is(false));
+        givenScmWithNoAuth();
+        assertThat(reverter.revert(subversionScm), is(false));
     }
 
     @Test
     public void shouldLogExceptionIfThrown() throws Exception {
-        givenSubversionScmWithAuth();
+        givenScmWithAuth();
         when(build.getEnvironment(listener)).thenThrow(ioException);
-        reverter.revert();
+        reverter.revert(subversionScm);
         verify(messenger).printStackTraceFor(ioException);
     }
 
     @Test(expected=RuntimeException.class)
     public void shouldNotCatchRuntimeExceptionIfThrown() throws Exception {
-        givenSubversionScmWithAuth();
+        givenScmWithAuth();
         when(build.getEnvironment(listener)).thenThrow(new RuntimeException());
-        reverter.revert();
+        reverter.revert(subversionScm);
     }
 
-    private void givenSubversionScmWithAuth() throws Exception {
-        when(rootProject.getScm()).thenReturn(subversionScm);
+    private void givenScmWithAuth() throws Exception {
         when(svnFactory.create(project, subversionScm)).thenReturn(clientManager);
     }
 
-    public void givenSubversionScmWithNoAuth() throws Exception {
-        when(rootProject.getScm()).thenReturn(subversionScm);
+    public void givenScmWithNoAuth() throws Exception {
         when(svnFactory.create(Matchers.<AbstractProject>any(), Matchers.<SubversionSCM>any()))
         .thenThrow(new NoSvnAuthException());
     }
