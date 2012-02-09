@@ -70,7 +70,8 @@ class SvnReverter {
 
         final SVNDiffClient diffClient = svnClientManager.getDiffClient();
         diffClient.doMerge(moduleLocation.getSVNURL(), SVNRevision.create(revisionNumber),
-                Collections.singleton(range), new File(moduleLocation.getLocalDir()),
+                Collections.singleton(range),
+                new File(build.getModuleRoot().absolutize().toString()),
                 SVNDepth.INFINITY, true, false, false, false);
         return true;
     }
