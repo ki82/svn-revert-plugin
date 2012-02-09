@@ -8,8 +8,10 @@ import hudson.model.FreeStyleProject;
 import hudson.scm.NullSCM;
 import hudson.scm.SubversionSCM;
 
+import java.io.File;
 import java.util.concurrent.ExecutionException;
 
+import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
 
@@ -37,7 +39,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertBuildStatus(Result.UNSTABLE, currentBuild);
     }
 
-    public void DISABLEDtestShouldRevertWhenBuildStatusChangesToUnstable() throws Exception {
+    public void testShouldRevertWhenBuildStatusChangesToUnstable() throws Exception {
         givenJobWithSubversionScm();
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
@@ -65,8 +67,9 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private void givenJobWithSubversionScm() throws Exception {
         job = createFreeStyleProject("subversion-scm-job");
         job.getPublishersList().add(new JenkinsGlue(""));
-        System.setProperty("SVN_REVISION", "123");
-        job.setScm(new SubversionSCM(""));
+        final File repo = new CopyExisting(getClass().getResource("repo.zip")).allocate();
+        final SubversionSCM scm = new SubversionSCM("file://" + repo.getPath());
+        job.setScm(scm);
     }
 
     private FreeStyleBuild scheduleBuild() throws Exception {
