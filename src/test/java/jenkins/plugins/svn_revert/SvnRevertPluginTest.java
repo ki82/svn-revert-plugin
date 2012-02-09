@@ -24,7 +24,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final FreeStyleBuild build = scheduleBuild();
 
         assertThat(build.getLog(LOG_LIMIT).toString(),
-                containsString("Will not revert since build status is not UNSTABLE"));
+                containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
         assertBuildStatus(Result.SUCCESS, build);
     }
 
@@ -33,7 +33,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
         assertThat(currentBuild.getLog(LOG_LIMIT).toString(),
-                containsString("The Subversion Revert Plugin can only be used with Subversion SCM"));
+                containsString(Messenger.NOT_SUBVERSION_SCM));
         assertBuildStatus(Result.UNSTABLE, currentBuild);
     }
 
