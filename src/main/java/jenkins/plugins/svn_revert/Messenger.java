@@ -37,4 +37,8 @@ class Messenger {
         exception.printStackTrace(logger);
     }
 
+    public void log(final String string) {
+        logger.println(string);
+    }
+
 }

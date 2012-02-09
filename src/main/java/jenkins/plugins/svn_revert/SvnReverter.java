@@ -61,6 +61,7 @@ class SvnReverter {
         svnClientManager = svnFactory.create(rootProject, subversionScm);
 
         final EnvVars envVars = build.getEnvironment(listener);
+        messenger.log(envVars.toString());
         final int revisionNumber = Integer.parseInt(envVars.get("SVN_REVISION"));
         final SVNRevisionRange range = new SVNRevisionRange(
                 SVNRevision.create(revisionNumber), SVNRevision.create(revisionNumber - 1));

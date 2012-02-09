@@ -4,11 +4,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
-import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.scm.NullSCM;
+import hudson.scm.SubversionSCM;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -31,32 +30,47 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     public void testShouldNotRevertWhenNotSubversionSCM() throws Exception {
         givenJobWithNullScm();
+        final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
-        scheduleBuild();
-
-        givenJobStatusIsUnstable();
-
-        final FreeStyleBuild build = scheduleBuild();
-
-        assertThat(build.getLog(LOG_LIMIT).toString(),
+        assertThat(currentBuild.getLog(LOG_LIMIT).toString(),
                 containsString("The Subversion Revert Plugin can only be used with Subversion SCM"));
-        assertBuildStatus(Result.UNSTABLE, build);
-
+        assertBuildStatus(Result.UNSTABLE, currentBuild);
     }
 
-    private void givenJobStatusIsUnstable() throws IOException {
+    public void DISABLEDtestShouldRevertWhenBuildStatusChangesToUnstable() throws Exception {
+        givenJobWithSubversionScm();
+        final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+
+        System.out.println(currentBuild.getLog(LOG_LIMIT).toString());
+        assertBuildStatus(Result.UNSTABLE, currentBuild);
+    }
+
+    private FreeStyleBuild givenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
+            InterruptedException, ExecutionException {
+        scheduleBuild();
+        givenJobStatusIsUnstable();
+        return scheduleBuild();
+    }
+
+    private void givenJobStatusIsUnstable() throws Exception {
         job.getBuildersList().add(new MockBuilder(Result.UNSTABLE));
     }
 
-    private void givenJobWithNullScm() throws IOException {
+    private void givenJobWithNullScm() throws Exception {
         job = createFreeStyleProject("no-scm-job");
-        job.setScm(new NullSCM());
         job.getPublishersList().add(new JenkinsGlue(""));
+        job.setScm(new NullSCM());
     }
 
-    private FreeStyleBuild scheduleBuild() throws InterruptedException,
-    ExecutionException {
-        return job.scheduleBuild2(0, new Cause.UserCause()).get();
+    private void givenJobWithSubversionScm() throws Exception {
+        job = createFreeStyleProject("subversion-scm-job");
+        job.getPublishersList().add(new JenkinsGlue(""));
+        System.setProperty("SVN_REVISION", "123");
+        job.setScm(new SubversionSCM(""));
+    }
+
+    private FreeStyleBuild scheduleBuild() throws Exception {
+        return job.scheduleBuild2(0).get();
     }
 
 }
