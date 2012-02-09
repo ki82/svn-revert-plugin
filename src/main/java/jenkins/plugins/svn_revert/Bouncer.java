@@ -6,7 +6,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.scm.SubversionSCM;
 
-class Controller {
+class Bouncer {
 
     static boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher,
             final Messenger messenger, final SvnReverter svnReverter) {

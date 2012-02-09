@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 @SuppressWarnings("rawtypes")
-public class ControllerTest extends AbstractMockitoTestCase {
+public class BouncerTest extends AbstractMockitoTestCase {
 
     private static final Result NOT_SUCCESS = Result.UNSTABLE;
     private static final Result NOT_UNSTABLE = Result.SUCCESS;
@@ -63,14 +63,14 @@ public class ControllerTest extends AbstractMockitoTestCase {
     @Test
     public void shouldLogIfRepoIsNotSubversion() throws Exception {
         givenNotSubversionScm();
-        Controller.perform(build, launcher, messenger, reverter);
+        Bouncer.perform(build, launcher, messenger, reverter);
         verify(messenger).informNotSubversionSCM();
     }
 
     @Test
     public void shouldReturnTrueIfRepoIsNotSubversion() throws Exception {
         givenNotSubversionScm();
-        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
+        assertThat(Bouncer.perform(build, launcher, messenger, reverter), is(true));
     }
 
     private void givenNotSubversionScm() {
@@ -81,14 +81,14 @@ public class ControllerTest extends AbstractMockitoTestCase {
     public void shouldReturnTrueWhenBuildResultIsNotUnstable() throws Exception {
         when(build.getResult()).thenReturn(NOT_UNSTABLE);
 
-        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
+        assertThat(Bouncer.perform(build, launcher, messenger, reverter), is(true));
     }
 
     @Test
     public void shouldLogWhenBuildResultIsNotUnstable() throws Exception {
         when(build.getResult()).thenReturn(NOT_UNSTABLE);
 
-        Controller.perform(build, launcher, messenger, reverter);
+        Bouncer.perform(build, launcher, messenger, reverter);
 
         verify(messenger).informBuildStatusNotUnstable();
     }
@@ -98,14 +98,14 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
-        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
+        assertThat(Bouncer.perform(build, launcher, messenger, reverter), is(true));
     }
 
     @Test
     public void shouldLogWhenPreviousBuildResultIsNotSuccess() throws Exception {
         when(build.getResult()).thenReturn(NOT_SUCCESS);
 
-        Controller.perform(build, launcher, messenger, reverter);
+        Bouncer.perform(build, launcher, messenger, reverter);
 
         verify(messenger).informPreviousBuildStatusNotSuccess();
     }
@@ -114,7 +114,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
     public void shouldNotRevertWhenBuildResultIsSuccess() throws Exception {
         when(build.getResult()).thenReturn(Result.SUCCESS);
 
-        Controller.perform(build, launcher, messenger, reverter);
+        Bouncer.perform(build, launcher, messenger, reverter);
 
         verify(reverter, never()).revert(subversionScm);
     }
@@ -123,7 +123,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
     public void shouldNotRevertWhenBuildResultIsFailure() throws Exception {
         when(build.getResult()).thenReturn(Result.FAILURE);
 
-        Controller.perform(build, launcher, messenger, reverter);
+        Bouncer.perform(build, launcher, messenger, reverter);
 
         verify(reverter, never()).revert(subversionScm);
     }
@@ -133,7 +133,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(Result.SUCCESS);
 
-        Controller.perform(build, launcher, messenger, reverter);
+        Bouncer.perform(build, launcher, messenger, reverter);
 
         verify(reverter).revert(subversionScm);
     }
@@ -143,7 +143,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
-        Controller.perform(build, launcher, messenger, reverter);
+        Bouncer.perform(build, launcher, messenger, reverter);
 
         verify(reverter, never()).revert(subversionScm);
     }
@@ -154,7 +154,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
 
         when(reverter.revert(subversionScm)).thenReturn(false);
 
-        assertThat(Controller.perform(build, launcher, messenger, reverter), is(false));
+        assertThat(Bouncer.perform(build, launcher, messenger, reverter), is(false));
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
 
         when(reverter.revert(subversionScm)).thenReturn(true);
 
-        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
+        assertThat(Bouncer.perform(build, launcher, messenger, reverter), is(true));
     }
 
     @Test
@@ -171,7 +171,7 @@ public class ControllerTest extends AbstractMockitoTestCase {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(build.getPreviousBuiltBuild()).thenReturn(null);
 
-        assertThat(Controller.perform(build, launcher, messenger, reverter), is(true));
+        assertThat(Bouncer.perform(build, launcher, messenger, reverter), is(true));
     }
 
 
