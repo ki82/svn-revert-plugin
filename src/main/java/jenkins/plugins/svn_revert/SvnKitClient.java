@@ -34,7 +34,6 @@ class SvnKitClient {
     void commit(final File workspace) throws SVNException {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
         commitClient.doCommit(new File[] { workspace }, true, "Reverted", false, true);
-
     }
 
 
