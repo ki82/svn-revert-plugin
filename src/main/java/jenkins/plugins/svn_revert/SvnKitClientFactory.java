@@ -8,9 +8,9 @@ import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
-class SvnClientManagerFactory {
+class SvnKitClientFactory {
 
-    SVNClientManager create(final AbstractProject<?, ?> project,
+    SvnKitClient create(final AbstractProject<?, ?> project,
             final SubversionSCM scm) throws NoSvnAuthException {
         final ISVNAuthenticationProvider svnAuthProvider =
                 scm.getDescriptor().createAuthenticationProvider(project);
@@ -20,6 +20,6 @@ class SvnClientManagerFactory {
         final ISVNAuthenticationManager svnAuthManager =
                 SVNWCUtil.createDefaultAuthenticationManager();
         svnAuthManager.setAuthenticationProvider(svnAuthProvider);
-        return SVNClientManager.newInstance(null, svnAuthManager);
+        return new SvnKitClient(SVNClientManager.newInstance(null, svnAuthManager));
     }
 }

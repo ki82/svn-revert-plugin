@@ -33,6 +33,11 @@ class Messenger {
         logger.println(NO_SVN_AUTH_PROVIDER);
     }
 
+    void informReverted(final int fromRevision, final int toRevision, final String repository) {
+        // TODO Auto-generated method stub
+
+    }
+
     public void printStackTraceFor(final Exception exception) {
         exception.printStackTrace(logger);
     }

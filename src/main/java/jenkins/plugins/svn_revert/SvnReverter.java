@@ -9,26 +9,19 @@ import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 
-import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.wc.SVNClientManager;
-import org.tmatesoft.svn.core.wc.SVNCommitClient;
-import org.tmatesoft.svn.core.wc.SVNDiffClient;
-import org.tmatesoft.svn.core.wc.SVNRevision;
-import org.tmatesoft.svn.core.wc.SVNRevisionRange;
 
 class SvnReverter {
 
     private final Messenger messenger;
     private final AbstractBuild<?, ?> build;
     private final BuildListener listener;
-    private SVNClientManager svnClientManager;
-    private final SvnClientManagerFactory svnFactory;
+    private SvnKitClient svnKitClient;
+    private final SvnKitClientFactory svnFactory;
 
     SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
-            final Messenger messenger, final SvnClientManagerFactory svnFactory) {
+            final Messenger messenger, final SvnKitClientFactory svnFactory) {
         this.build = build;
         this.listener = listener;
         this.messenger = messenger;
@@ -55,22 +48,17 @@ class SvnReverter {
     private boolean revertAndCommit(final AbstractProject<?, ?> rootProject,
             final SubversionSCM subversionScm)
     throws NoSvnAuthException, IOException, InterruptedException, SVNException {
-        svnClientManager = svnFactory.create(rootProject, subversionScm);
+        svnKitClient = svnFactory.create(rootProject, subversionScm);
 
         final EnvVars envVars = build.getEnvironment(listener);
         final int revisionNumber = Integer.parseInt(envVars.get("SVN_REVISION"));
-        final SVNRevisionRange range = new SVNRevisionRange(
-                SVNRevision.create(revisionNumber), SVNRevision.create(revisionNumber - 1));
 
         final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
 
-        final SVNDiffClient diffClient = svnClientManager.getDiffClient();
-        final File moduleRoot = new File(build.getModuleRoot().absolutize().toString());
-        diffClient.doMerge(moduleLocation.getSVNURL(), SVNRevision.create(revisionNumber),
-                Collections.singleton(range), moduleRoot, SVNDepth.INFINITY,
-                true, false, false, false);
-        final SVNCommitClient commitClient = svnClientManager.getCommitClient();
-        commitClient.doCommit(new File[] { moduleRoot }, true, "Reverted", false, true);
+        final File workspace = new File(build.getModuleRoot().absolutize().toString());
+        svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleLocation.getSVNURL(), workspace);
+
+        svnKitClient.commit(workspace);
         return true;
     }
 

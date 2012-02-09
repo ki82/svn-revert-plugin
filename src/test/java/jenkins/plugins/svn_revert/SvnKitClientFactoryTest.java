@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 
-public class SvnClientManagerFactoryTest extends AbstractMockitoTestCase {
+public class SvnKitClientFactoryTest extends AbstractMockitoTestCase {
 
     @Mock
     private SubversionSCM scm;
@@ -23,7 +23,7 @@ public class SvnClientManagerFactoryTest extends AbstractMockitoTestCase {
         when(scm.getDescriptor()).thenReturn(descriptor);
         when(descriptor.createAuthenticationProvider(project)).thenReturn(null);
 
-        final SvnClientManagerFactory clientManagerFactory = new SvnClientManagerFactory();
+        final SvnKitClientFactory clientManagerFactory = new SvnKitClientFactory();
         clientManagerFactory.create(project, scm);
     }
 }

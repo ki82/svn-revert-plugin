@@ -22,6 +22,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private static final String NEXT_SVN_REVISION = "6";
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
+    private String svnUrl;
 
     public void testShouldNotRevertWhenNotSubversionSCM() throws Exception {
         givenJobWithNullScm();
@@ -54,6 +55,19 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertEquals(NEXT_SVN_REVISION, revertedBuild.getEnvironment().get("SVN_REVISION"));
     }
 
+    public void DISABLED_testLogsMessageContainingSvnRepoAndRevisionsWhenReverting() throws Exception {
+        givenJobWithSubversionScm();
+
+        final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+
+
+        final String log = currentBuild.getLog(LOG_LIMIT).toString();
+        System.out.println(log);
+        assertThat(log, containsString(svnUrl));
+        assertThat(log, containsString("@" + HEAD_REVISION_BEFORE_START));
+        assertThat(log, containsString("@" + NEXT_SVN_REVISION));
+    }
+
     private FreeStyleBuild givenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
             InterruptedException, ExecutionException {
         scheduleBuild();
@@ -75,7 +89,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         job = createFreeStyleProject("subversion-scm-job");
         job.getPublishersList().add(new JenkinsGlue(""));
         final File repo = new CopyExisting(getClass().getResource("repo.zip")).allocate();
-        final SubversionSCM scm = new SubversionSCM("file://" + repo.getPath());
+        svnUrl = "file://" + repo.getPath();
+        final SubversionSCM scm = new SubversionSCM(svnUrl);
         job.setScm(scm);
     }
 
