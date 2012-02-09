@@ -18,7 +18,8 @@ import org.jvnet.hudson.test.MockBuilder;
 
 public class SvnRevertPluginTest extends HudsonTestCase {
 
-    private static final String HEAD_REVISION_BEFORE_START = "5";
+    private static final String REVISION_THAT_TRIGGERED_CURRENT_BUILD = "5";
+    private static final String REVISION_THAT_TRIGGERED_PREVIOUS_BUILD = "4";
     private static final String NEXT_SVN_REVISION = "6";
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
@@ -55,7 +56,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertEquals(NEXT_SVN_REVISION, revertedBuild.getEnvironment().get("SVN_REVISION"));
     }
 
-    public void DISABLED_testLogsMessageContainingSvnRepoAndRevisionsWhenReverting() throws Exception {
+    public void testLogsMessageContainingSvnRepoAndRevisionsWhenReverting() throws Exception {
         givenJobWithSubversionScm();
 
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
@@ -64,8 +65,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final String log = currentBuild.getLog(LOG_LIMIT).toString();
         System.out.println(log);
         assertThat(log, containsString(svnUrl));
-        assertThat(log, containsString("@" + HEAD_REVISION_BEFORE_START));
-        assertThat(log, containsString("@" + NEXT_SVN_REVISION));
+        assertThat(log, containsString(REVISION_THAT_TRIGGERED_PREVIOUS_BUILD + ":"
+                + REVISION_THAT_TRIGGERED_CURRENT_BUILD));
     }
 
     private FreeStyleBuild givenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
@@ -100,7 +101,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     private void verifyNothingReverted() throws Exception, IOException, InterruptedException {
         final FreeStyleBuild revertedBuild = scheduleBuild();
-        assertEquals(HEAD_REVISION_BEFORE_START, revertedBuild.getEnvironment().get("SVN_REVISION"));
+        assertEquals(REVISION_THAT_TRIGGERED_CURRENT_BUILD, revertedBuild.getEnvironment().get("SVN_REVISION"));
     }
 
 }

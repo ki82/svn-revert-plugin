@@ -11,9 +11,11 @@ class Messenger {
     static final String NOT_SUBVERSION_SCM =
             "The Subversion Revert Plugin can only be used with Subversion SCM.";
     static final String NO_SVN_AUTH_PROVIDER = "No Subversion credentials available.";
+    static final String REVERTED_CHANGES =
+            "Reverted changes between %d:%d in %s since build became UNSTABLE.\n";
     private final PrintStream logger;
 
-    public Messenger(final PrintStream logger) {
+    Messenger(final PrintStream logger) {
         this.logger = logger;
     }
 
@@ -34,15 +36,14 @@ class Messenger {
     }
 
     void informReverted(final int fromRevision, final int toRevision, final String repository) {
-        // TODO Auto-generated method stub
-
+        logger.format(REVERTED_CHANGES, toRevision, fromRevision, repository);
     }
 
-    public void printStackTraceFor(final Exception exception) {
+    void printStackTraceFor(final Exception exception) {
         exception.printStackTrace(logger);
     }
 
-    public void log(final String string) {
+    void log(final String string) {
         logger.println(string);
     }
 

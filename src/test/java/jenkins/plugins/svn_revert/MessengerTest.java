@@ -46,6 +46,12 @@ public class MessengerTest extends AbstractMockitoTestCase {
     }
 
     @Test
+    public void logsWhenReverted() throws Exception {
+        messenger.informReverted(2, 1, "repo");
+        verify(logger).format(Messenger.REVERTED_CHANGES, 1, 2, "repo");
+    }
+
+    @Test
     public void printsStackTrace() throws Exception {
         messenger.printStackTraceFor(exception);
         verify(exception).printStackTrace(logger);

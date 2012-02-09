@@ -58,6 +58,9 @@ class SvnReverter {
         svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleLocation.getSVNURL(), moduleDir);
 
         svnKitClient.commit(moduleDir);
+
+        messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
+
         return true;
     }
 
