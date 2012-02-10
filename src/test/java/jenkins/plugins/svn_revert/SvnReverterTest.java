@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import hudson.EnvVars;
-import hudson.FilePath;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -16,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -46,11 +44,13 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private EnvVars environmentVariables;
     @Mock
     private SvnKitClient svnKitClient;
-
     @Mock
-    private File file;
+    private ModuleResolver moduleResolver;
+    @Mock
+    private File moduleDir;
 
     private final IOException ioException = new IOException();
+
 
 
 
@@ -59,7 +59,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
-        reverter = new SvnReverter(build, listener, messenger, svnFactory);
+        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver);
     }
 
     @Test
@@ -90,20 +90,18 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         reverter.revert(subversionScm);
     }
 
-    @Ignore
     @Test
     public void shouldLogWhenRevertSuccessful() throws Exception {
         givenScmWithAuth();
 
         when(build.getEnvironment(listener)).thenReturn(environmentVariables);
         when(environmentVariables.get("SVN_REVISION")).thenReturn("911");
+        final ModuleLocation moduleLocation = new ModuleLocation("remote", "local");
         when(subversionScm.getLocations(environmentVariables, build)).thenReturn(new ModuleLocation[] {
-            new ModuleLocation("remote", "local")
+            moduleLocation
         });
-        when(file.getPath()).thenReturn("/module-root-path");
-        when(file.getAbsolutePath()).thenReturn("/module-root-path");
-        final FilePath moduleRoot = new FilePath(file);
-        when(build.getModuleRoot()).thenReturn(moduleRoot);
+        when(moduleResolver.getModuleRoot(build, moduleLocation)).thenReturn(moduleDir);
+
         reverter.revert(subversionScm);
 
         verify(messenger).informReverted(911, 910, "remote");
