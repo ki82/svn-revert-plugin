@@ -20,8 +20,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.tmatesoft.svn.core.wc.SVNCommitClient;
-import org.tmatesoft.svn.core.wc.SVNDiffClient;
 
 @SuppressWarnings("rawtypes")
 public class SvnReverterTest extends AbstractMockitoTestCase {
@@ -46,10 +44,6 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private SvnKitClientFactory svnFactory;
     @Mock
     private EnvVars environmentVariables;
-    @Mock
-    private SVNDiffClient diffClient;
-    @Mock
-    private SVNCommitClient commitClient;
     @Mock
     private SvnKitClient svnKitClient;
 
