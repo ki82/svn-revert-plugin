@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>svn-revert-plugin</artifactId>
   <packaging>hpi</packaging>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
@@ -179,10 +179,10 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.hamcrest</groupId>
-    	<artifactId>hamcrest-core</artifactId>
-    	<version>1.2.1</version>
-    	<scope>test</scope>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>1.2.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <properties>
