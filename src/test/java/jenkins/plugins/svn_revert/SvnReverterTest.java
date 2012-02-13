@@ -22,6 +22,9 @@ import org.mockito.Mock;
 @SuppressWarnings("rawtypes")
 public class SvnReverterTest extends AbstractMockitoTestCase {
 
+    private static final int FROM_REVISION = 911;
+    private static final int TO_REVISION = FROM_REVISION - 1;
+
     private SvnReverter reverter;
 
     @Mock
@@ -51,12 +54,14 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private final IOException ioException = new IOException();
 
+    private final String revertMessage = "Configurable message!!!";
+
     @Before
     public void setup() {
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
-        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver);
+        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, revertMessage);
     }
 
     @Test
@@ -89,19 +94,39 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldLogWhenRevertSuccessful() throws Exception {
-        givenScmWithAuth();
+        givenAllRevertConditionsMet();
 
-        when(build.getEnvironment(listener)).thenReturn(environmentVariables);
-        when(environmentVariables.get("SVN_REVISION")).thenReturn("911");
+        reverter.revert(subversionScm);
+
+        verify(messenger).informReverted(FROM_REVISION, TO_REVISION, "remote");
+    }
+
+    @Test
+    public void shouldUseConfiguredMessageWhenReverting() throws Exception {
+        givenAllRevertConditionsMet();
+
+        reverter.revert(subversionScm);
+
+        verify(svnKitClient).commit(moduleDir, revertMessage );
+    }
+
+    private void givenAllRevertConditionsMet() throws Exception, IOException, InterruptedException {
+        givenScmWithAuth();
+        givenEnvirontVariables();
+        givenModuleLocations();
+    }
+
+    private void givenModuleLocations() {
         final ModuleLocation moduleLocation = new ModuleLocation("remote", "local");
         when(subversionScm.getLocations(environmentVariables, build)).thenReturn(new ModuleLocation[] {
             moduleLocation
         });
         when(moduleResolver.getModuleRoot(build, moduleLocation)).thenReturn(moduleDir);
+    }
 
-        reverter.revert(subversionScm);
-
-        verify(messenger).informReverted(911, 910, "remote");
+    private void givenEnvirontVariables() throws IOException, InterruptedException {
+        when(build.getEnvironment(listener)).thenReturn(environmentVariables);
+        when(environmentVariables.get("SVN_REVISION")).thenReturn(Integer.toString(FROM_REVISION));
     }
 
     private void givenScmWithAuth() throws Exception {

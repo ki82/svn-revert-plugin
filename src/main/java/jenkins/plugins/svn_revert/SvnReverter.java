@@ -20,15 +20,17 @@ class SvnReverter {
     private SvnKitClient svnKitClient;
     private final SvnKitClientFactory svnFactory;
     private final ModuleResolver moduleResolver;
+    private final String revertMessage;
 
     SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
             final Messenger messenger, final SvnKitClientFactory svnFactory,
-            final ModuleResolver moduleResolver) {
+            final ModuleResolver moduleResolver, final String revertMessage) {
         this.build = build;
         this.listener = listener;
         this.messenger = messenger;
         this.svnFactory = svnFactory;
         this.moduleResolver = moduleResolver;
+        this.revertMessage = revertMessage;
     }
 
     boolean revert(final SubversionSCM subversionScm) {
@@ -59,7 +61,7 @@ class SvnReverter {
         final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
 
         svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
-        svnKitClient.commit(moduleDir);
+        svnKitClient.commit(moduleDir, revertMessage);
 
         messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
 
