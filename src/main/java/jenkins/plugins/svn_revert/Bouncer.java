@@ -23,8 +23,16 @@ class Bouncer {
             messenger.informPreviousBuildStatusNotSuccess();
             return true;
         }
+        if (noChangesIn(build)) {
+            messenger.informNoChanges();
+            return true;
+        }
 
         return svnReverter.revert(getSubversionScm(build));
+    }
+
+    private static boolean noChangesIn(final AbstractBuild<?, ?> build) {
+        return build.getChangeSet().isEmptySet();
     }
 
     private static SubversionSCM getSubversionScm(final AbstractBuild<?, ?> abstractBuild) {

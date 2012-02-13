@@ -13,6 +13,8 @@ class Messenger {
     static final String NO_SVN_AUTH_PROVIDER = "No Subversion credentials available.";
     static final String REVERTED_CHANGES =
             "Reverted changes between %d:%d in %s since build became UNSTABLE.\n";
+    public static final String NO_CHANGES =
+            "Will not revert since there are no changes in current build.";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
@@ -39,6 +41,10 @@ class Messenger {
         logger.format(REVERTED_CHANGES, toRevision, fromRevision, repository);
     }
 
+    void informNoChanges() {
+        logger.println(NO_CHANGES);
+    }
+
     void printStackTraceFor(final Exception exception) {
         exception.printStackTrace(logger);
     }
@@ -46,5 +52,6 @@ class Messenger {
     void log(final String string) {
         logger.println(string);
     }
+
 
 }

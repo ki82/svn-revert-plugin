@@ -8,6 +8,7 @@ import hudson.EnvVars;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.scm.ChangeLogSet;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 
@@ -51,6 +52,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private ModuleResolver moduleResolver;
     @Mock
     private File moduleDir;
+
+    private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
 
     private final IOException ioException = new IOException();
 
@@ -110,6 +113,15 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         verify(svnKitClient).commit(moduleDir, revertMessage );
     }
 
+    @Test
+    public void shouldLogWhenNoChanges() throws Exception {
+        givenNoChanges();
+
+        reverter.revert(subversionScm);
+
+        verify(messenger).informNoChanges();
+    }
+
     private void givenAllRevertConditionsMet() throws Exception, IOException, InterruptedException {
         givenScmWithAuth();
         givenEnvirontVariables();
@@ -131,6 +143,11 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private void givenScmWithAuth() throws Exception {
         when(svnFactory.create(rootProject, subversionScm)).thenReturn(svnKitClient);
+        when(build.getChangeSet()).thenReturn(emptyChangeSet);
+    }
+
+    private void givenNoChanges() throws Exception {
+        when(build.getChangeSet()).thenReturn(emptyChangeSet);
     }
 
     private void givenScmWithNoAuth() throws Exception {

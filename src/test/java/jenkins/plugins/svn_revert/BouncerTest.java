@@ -11,14 +11,20 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.scm.ChangeLogSet;
 import hudson.scm.NullSCM;
 import hudson.scm.SubversionSCM;
 
 import java.io.PrintStream;
+import java.util.LinkedList;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.jvnet.hudson.test.FakeChangeLogSCM.EntryImpl;
+import org.jvnet.hudson.test.FakeChangeLogSCM.FakeChangeLogSet;
 import org.mockito.Mock;
+
+import com.google.common.collect.Lists;
 
 @SuppressWarnings("rawtypes")
 public class BouncerTest extends AbstractMockitoTestCase {
@@ -50,6 +56,10 @@ public class BouncerTest extends AbstractMockitoTestCase {
     @Mock
     private NullSCM nullScm;
 
+    private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
+    private EntryImpl entry;
+    private LinkedList<EntryImpl> entryList;
+
     @Before
     public void setUp() {
         when(build.getRootBuild()).thenReturn(rootBuild);
@@ -58,6 +68,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
         when(listener.getLogger()).thenReturn(logger);
         when(build.getPreviousBuiltBuild()).thenReturn(previousBuild);
         when(rootProject.getScm()).thenReturn(subversionScm);
+        givenMayRevert();
     }
 
     @Test
@@ -71,10 +82,6 @@ public class BouncerTest extends AbstractMockitoTestCase {
     public void shouldReturnTrueIfRepoIsNotSubversion() throws Exception {
         givenNotSubversionScm();
         assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(true));
-    }
-
-    private void givenNotSubversionScm() {
-        when(rootProject.getScm()).thenReturn(nullScm);
     }
 
     @Test
@@ -95,7 +102,6 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldReturnTrueWhenPreviousBuildResultIsNotSuccess() throws Exception {
-        when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
         assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(true));
@@ -103,11 +109,29 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldLogWhenPreviousBuildResultIsNotSuccess() throws Exception {
-        when(build.getResult()).thenReturn(NOT_SUCCESS);
+        when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
         Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter);
 
         verify(messenger).informPreviousBuildStatusNotSuccess();
+    }
+
+    @Test
+    public void shouldLogWhenNoChanges() throws Exception {
+        when(build.getChangeSet()).thenReturn(emptyChangeSet);
+
+        Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter);
+
+        verify(messenger).informNoChanges();
+    }
+
+    @Test
+    public void shouldNotRevertWhenNoChanges() throws Exception {
+        when(build.getChangeSet()).thenReturn(emptyChangeSet);
+
+        Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter);
+
+        verifyNotReverted();
     }
 
     @Test
@@ -116,7 +140,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
         Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter);
 
-        verify(reverter, never()).revert(subversionScm);
+        verifyNotReverted();
     }
 
     @Test
@@ -125,14 +149,11 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
         Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter);
 
-        verify(reverter, never()).revert(subversionScm);
+        verifyNotReverted();
     }
 
     @Test
     public void shouldRevertWhenBuildResultIsUnstableAndPreviousResultIsSuccess() throws Exception {
-        when(build.getResult()).thenReturn(Result.UNSTABLE);
-        when(previousBuild.getResult()).thenReturn(Result.SUCCESS);
-
         Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter);
 
         verify(reverter).revert(subversionScm);
@@ -140,18 +161,15 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldNotRevertIfPreviousBuildWasNotSuccess() throws Exception {
-        when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
 
         Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter);
 
-        verify(reverter, never()).revert(subversionScm);
+        verifyNotReverted();
     }
 
     @Test
     public void shouldFailBuildIfRevertFails() throws Exception {
-        givenWillRevert();
-
         when(reverter.revert(subversionScm)).thenReturn(false);
 
         assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(false));
@@ -159,8 +177,6 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldNotFailBuildIfRevertSucceeds() throws Exception {
-        givenWillRevert();
-
         when(reverter.revert(subversionScm)).thenReturn(true);
 
         assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(true));
@@ -168,17 +184,25 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldNotFailWhenFirstBuildIsUnstable() throws Exception {
-        when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(build.getPreviousBuiltBuild()).thenReturn(null);
 
         assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(true));
     }
 
+    private void givenNotSubversionScm() {
+        when(rootProject.getScm()).thenReturn(nullScm);
+    }
 
-
-    void givenWillRevert() {
+    private void givenMayRevert() {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(Result.SUCCESS);
+        entryList = Lists.newLinkedList();
+        entryList.add(entry);
+        when(build.getChangeSet()).thenReturn(new FakeChangeLogSet(build, entryList));
+    }
+
+    private void verifyNotReverted() {
+        verify(reverter, never()).revert(subversionScm);
     }
 
 }

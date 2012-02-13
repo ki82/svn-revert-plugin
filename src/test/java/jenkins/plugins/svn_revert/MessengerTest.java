@@ -56,4 +56,10 @@ public class MessengerTest extends AbstractMockitoTestCase {
         messenger.printStackTraceFor(exception);
         verify(exception).printStackTrace(logger);
     }
+
+    @Test
+    public void logsNoChanges() throws Exception {
+        messenger.informNoChanges();
+        verify(logger).println(Messenger.NO_CHANGES);
+    }
 }
