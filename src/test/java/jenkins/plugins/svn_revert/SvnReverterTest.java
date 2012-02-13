@@ -51,9 +51,6 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private final IOException ioException = new IOException();
 
-
-
-
     @Before
     public void setup() {
         when(build.getRootBuild()).thenReturn(rootBuild);
