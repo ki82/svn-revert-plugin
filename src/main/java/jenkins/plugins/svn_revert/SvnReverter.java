@@ -4,13 +4,18 @@ import hudson.EnvVars;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.tmatesoft.svn.core.SVNException;
+
+import com.google.common.collect.Lists;
 
 class SvnReverter {
 
@@ -55,7 +60,7 @@ class SvnReverter {
         svnKitClient = svnFactory.create(rootProject, subversionScm);
 
         final EnvVars envVars = build.getEnvironment(listener);
-        final int revisionNumber = Integer.parseInt(envVars.get("SVN_REVISION"));
+        final int revisionNumber = getChangeRevisions().get(0);
 
         final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
         final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
@@ -66,6 +71,15 @@ class SvnReverter {
         messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
 
         return true;
+    }
+
+    private List<Integer> getChangeRevisions() {
+        final ChangeLogSet<? extends Entry> cs = build.getChangeSet();
+        final List<Integer> revisions = Lists.newArrayList();
+        for (final Entry entry : cs) {
+            revisions.add(Integer.parseInt(entry.getCommitId(), 10));
+        }
+        return revisions;
     }
 
 

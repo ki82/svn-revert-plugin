@@ -2,6 +2,7 @@ package jenkins.plugins.svn_revert;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import hudson.EnvVars;
@@ -14,11 +15,16 @@ import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.jvnet.hudson.test.FakeChangeLogSCM.EntryImpl;
+import org.jvnet.hudson.test.FakeChangeLogSCM.FakeChangeLogSet;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+
+import com.google.common.collect.Lists;
 
 @SuppressWarnings("rawtypes")
 public class SvnReverterTest extends AbstractMockitoTestCase {
@@ -58,6 +64,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private final IOException ioException = new IOException();
 
     private final String revertMessage = "Configurable message!!!";
+    private FakeChangeLogSet changeLogSet;
 
     @Before
     public void setup() {
@@ -113,19 +120,31 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         verify(svnKitClient).commit(moduleDir, revertMessage );
     }
 
-    @Test
-    public void shouldLogWhenNoChanges() throws Exception {
-        givenNoChanges();
-
-        reverter.revert(subversionScm);
-
-        verify(messenger).informNoChanges();
-    }
-
     private void givenAllRevertConditionsMet() throws Exception, IOException, InterruptedException {
         givenScmWithAuth();
         givenEnvirontVariables();
+        givenNewRevisions(FROM_REVISION);
         givenModuleLocations();
+    }
+
+    private void givenScmWithAuth() throws Exception {
+        when(svnFactory.create(rootProject, subversionScm)).thenReturn(svnKitClient);
+        when(build.getChangeSet()).thenReturn(emptyChangeSet);
+    }
+
+    private void givenEnvirontVariables() throws Exception {
+        when(build.getEnvironment(listener)).thenReturn(environmentVariables);
+    }
+
+    private void givenNewRevisions(final int... revisions) {
+        final ArrayList<EntryImpl> entries = Lists.newArrayList();
+        for (final int revision : revisions) {
+            final EntryImpl entry = mock(EntryImpl.class);
+            when(entry.getCommitId()).thenReturn(Integer.toString(revision));
+            entries.add(entry);
+        }
+        changeLogSet = new FakeChangeLogSet(build, entries);
+        when(build.getChangeSet()).thenReturn(changeLogSet);
     }
 
     private void givenModuleLocations() {
@@ -134,20 +153,6 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
             moduleLocation
         });
         when(moduleResolver.getModuleRoot(build, moduleLocation)).thenReturn(moduleDir);
-    }
-
-    private void givenEnvirontVariables() throws IOException, InterruptedException {
-        when(build.getEnvironment(listener)).thenReturn(environmentVariables);
-        when(environmentVariables.get("SVN_REVISION")).thenReturn(Integer.toString(FROM_REVISION));
-    }
-
-    private void givenScmWithAuth() throws Exception {
-        when(svnFactory.create(rootProject, subversionScm)).thenReturn(svnKitClient);
-        when(build.getChangeSet()).thenReturn(emptyChangeSet);
-    }
-
-    private void givenNoChanges() throws Exception {
-        when(build.getChangeSet()).thenReturn(emptyChangeSet);
     }
 
     private void givenScmWithNoAuth() throws Exception {
