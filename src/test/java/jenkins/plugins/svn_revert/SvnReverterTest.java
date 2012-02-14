@@ -23,6 +23,7 @@ import org.jvnet.hudson.test.FakeChangeLogSCM.EntryImpl;
 import org.jvnet.hudson.test.FakeChangeLogSCM.FakeChangeLogSet;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.tmatesoft.svn.core.SVNURL;
 
 import com.google.common.collect.Lists;
 
@@ -58,6 +59,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private ModuleResolver moduleResolver;
     @Mock
     private File moduleDir;
+    @Mock
+    private SVNURL svnUrl;
 
     private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
 
@@ -120,6 +123,16 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         verify(svnKitClient).commit(moduleDir, revertMessage );
     }
 
+    @Test
+    public void shouldRevertChangedRevision() throws Exception {
+        givenAllRevertConditionsMet();
+
+        reverter.revert(subversionScm);
+
+        verify(svnKitClient).merge(FROM_REVISION, TO_REVISION, svnUrl, moduleDir);
+    }
+
+
     private void givenAllRevertConditionsMet() throws Exception, IOException, InterruptedException {
         givenScmWithAuth();
         givenEnvirontVariables();
@@ -147,12 +160,13 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(build.getChangeSet()).thenReturn(changeLogSet);
     }
 
-    private void givenModuleLocations() {
+    private void givenModuleLocations() throws Exception {
         final ModuleLocation moduleLocation = new ModuleLocation("remote", "local");
         when(subversionScm.getLocations(environmentVariables, build)).thenReturn(new ModuleLocation[] {
             moduleLocation
         });
         when(moduleResolver.getModuleRoot(build, moduleLocation)).thenReturn(moduleDir);
+        when(moduleResolver.getSvnUrl(moduleLocation)).thenReturn(svnUrl);
     }
 
     private void givenScmWithNoAuth() throws Exception {
