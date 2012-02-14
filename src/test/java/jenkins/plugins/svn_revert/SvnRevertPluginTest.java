@@ -64,16 +64,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         verifyNothingReverted();
     }
 
-    public void testShouldRevertWhenBuildStatusChangesToUnstable() throws Exception {
-        givenJobWithSubversionScm();
-
-        currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
-
-        assertBuildStatus(UNSTABLE, currentBuild);
-        verifySometingReverted();
-    }
-
-    public void testLogsMessageContainingSvnRepoAndRevisionsWhenReverting() throws Exception {
+    public void testShouldLogAndRevertWhenBuildStatusChangesToUnstable() throws Exception {
         givenJobWithSubversionScm();
 
         currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
@@ -82,6 +73,13 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThat(buildLog, containsString(svnUrl));
         assertThat(buildLog, containsString(REVISION_THAT_TRIGGERED_PREVIOUS_BUILD + ":"
                 + REVISION_THAT_TRIGGERED_CURRENT_BUILD));
+        assertBuildStatus(UNSTABLE, currentBuild);
+        verifySometingReverted();
+    }
+
+        givenJobWithSubversionScm();
+
+
     }
 
     private void givenSubversionScmWithOneRepo() throws Exception {
