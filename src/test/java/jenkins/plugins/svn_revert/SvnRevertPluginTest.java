@@ -23,6 +23,7 @@ import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNCommitClient;
 
+@SuppressWarnings("deprecation")
 public class SvnRevertPluginTest extends HudsonTestCase {
 
     private static final String REVISION_THAT_TRIGGERED_CURRENT_BUILD = "6";
@@ -36,7 +37,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final File repo = new CopyExisting(getClass().getResource("repo.zip")).allocate();
+        final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
         svnUrl = "file://" + repo.getPath();
         scm = new SubversionSCM(svnUrl);
     }
