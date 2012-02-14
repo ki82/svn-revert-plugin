@@ -35,8 +35,8 @@ class SvnKitClient {
     @SuppressWarnings("deprecation")
     void commit(final File moduleDirectory, final String revertMessage) throws SVNException, IOException {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
-        commitClient.doCommit(new File[] { moduleDirectory.getCanonicalFile() }, true, revertMessage,
-                false, true);
+        commitClient.doCommit(new File[] { moduleDirectory.getCanonicalFile() }, true,
+                revertMessage, false, true);
     }
 
 }
