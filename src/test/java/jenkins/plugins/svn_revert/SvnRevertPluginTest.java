@@ -1,5 +1,7 @@
 package jenkins.plugins.svn_revert;
 
+import static hudson.model.Result.SUCCESS;
+import static hudson.model.Result.UNSTABLE;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import hudson.FilePath;
@@ -44,35 +46,37 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     public void testShouldNotRevertWhenNotSubversionSCM() throws Exception {
         givenJobWithNullScm();
-        currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+
+        currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
 
         assertThat(logFor(currentBuild), containsString(Messenger.NOT_SUBVERSION_SCM));
-        assertBuildStatus(Result.UNSTABLE, currentBuild);
+        assertBuildStatus(UNSTABLE, currentBuild);
     }
 
     public void testShouldNotRevertWhenBuildStatusIsSuccess() throws Exception {
         givenJobWithSubversionScm();
-        givenChangesInSubversion();
 
+        givenChangesInSubversion();
         currentBuild = scheduleBuild();
 
         assertThat(logFor(currentBuild), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
-        assertBuildStatus(Result.SUCCESS, currentBuild);
+        assertBuildStatus(SUCCESS, currentBuild);
         verifyNothingReverted();
     }
 
     public void testShouldRevertWhenBuildStatusChangesToUnstable() throws Exception {
         givenJobWithSubversionScm();
 
-        currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
-        assertBuildStatus(Result.UNSTABLE, currentBuild);
+        currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
+
+        assertBuildStatus(UNSTABLE, currentBuild);
         verifySometingReverted();
     }
 
     public void testLogsMessageContainingSvnRepoAndRevisionsWhenReverting() throws Exception {
         givenJobWithSubversionScm();
 
-        currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+        currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
 
         final String buildLog = logFor(currentBuild);
         assertThat(buildLog, containsString(svnUrl));
@@ -90,16 +94,20 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         createCommit(scm, "random_file.txt");
     }
 
-    private FreeStyleBuild givenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
+    private FreeStyleBuild whenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
             InterruptedException, ExecutionException {
-        scheduleBuild();
+        givenPreviousBuildSuccessful();
         givenChangesInSubversion();
-        givenJobStatusIsUnstable();
+        givenNextBuildWillBe(UNSTABLE);
         return scheduleBuild();
     }
 
-    private void givenJobStatusIsUnstable() throws Exception {
-        job.getBuildersList().add(new MockBuilder(Result.UNSTABLE));
+    private void givenPreviousBuildSuccessful() throws Exception {
+        assertBuildStatusSuccess(scheduleBuild());
+    }
+
+    private void givenNextBuildWillBe(final Result result) throws Exception {
+        job.getBuildersList().add(new MockBuilder(result));
     }
 
     private void givenJobWithNullScm() throws Exception {
