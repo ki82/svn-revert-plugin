@@ -74,10 +74,9 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
-        final String log = logFor(currentBuild);
-        System.out.println(log);
-        assertThat(log, containsString(svnUrl));
-        assertThat(log, containsString(REVISION_THAT_TRIGGERED_PREVIOUS_BUILD + ":"
+        final String buildLog = logFor(currentBuild);
+        assertThat(buildLog, containsString(svnUrl));
+        assertThat(buildLog, containsString(REVISION_THAT_TRIGGERED_PREVIOUS_BUILD + ":"
                 + REVISION_THAT_TRIGGERED_CURRENT_BUILD));
     }
 
@@ -115,8 +114,10 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         job.setScm(scm);
     }
 
-    private String logFor(final FreeStyleBuild currentBuild) throws IOException {
-        return currentBuild.getLog(LOG_LIMIT).toString();
+    private String logFor(final FreeStyleBuild build) throws IOException {
+        final String log = build.getLog(LOG_LIMIT).toString();
+        System.out.println("Log for build: " + log);
+        return log;
     }
 
     private FreeStyleBuild scheduleBuild() throws Exception {
