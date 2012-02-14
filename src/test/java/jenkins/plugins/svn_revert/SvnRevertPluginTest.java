@@ -77,11 +77,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         verifySometingReverted();
     }
 
-        givenJobWithSubversionScm();
-
-
-    }
-
     private void givenSubversionScmWithOneRepo() throws Exception {
         final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
         svnUrl = "file://" + repo.getPath();
