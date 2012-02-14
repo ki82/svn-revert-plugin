@@ -33,6 +33,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private FreeStyleProject job;
     private String svnUrl;
     private SubversionSCM scm;
+    private FreeStyleBuild currentBuild;
+    private FreeStyleBuild revertedBuild;
 
     @Override
     protected void setUp() throws Exception {
@@ -42,7 +44,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     public void testShouldNotRevertWhenNotSubversionSCM() throws Exception {
         givenJobWithNullScm();
-        final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+        currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
         assertThat(logFor(currentBuild), containsString(Messenger.NOT_SUBVERSION_SCM));
         assertBuildStatus(Result.UNSTABLE, currentBuild);
@@ -52,10 +54,10 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenJobWithSubversionScm();
         givenChangesInSubversion();
 
-        final FreeStyleBuild build = scheduleBuild();
+        currentBuild = scheduleBuild();
 
-        assertThat(logFor(build), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
-        assertBuildStatus(Result.SUCCESS, build);
+        assertThat(logFor(currentBuild), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
+        assertBuildStatus(Result.SUCCESS, currentBuild);
 
         verifyNothingReverted();
     }
@@ -63,17 +65,16 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     public void testShouldRevertWhenBuildStatusChangesToUnstable() throws Exception {
         givenJobWithSubversionScm();
 
-        final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+        currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
         assertBuildStatus(Result.UNSTABLE, currentBuild);
 
-        final FreeStyleBuild revertedBuild = scheduleBuild();
-        assertEquals(NEXT_SVN_REVISION, revertedBuild.getEnvironment().get("SVN_REVISION"));
+        verifySometingReverted();
     }
 
     public void testLogsMessageContainingSvnRepoAndRevisionsWhenReverting() throws Exception {
         givenJobWithSubversionScm();
 
-        final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
+        currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
         final String log = logFor(currentBuild);
         System.out.println(log);
@@ -147,8 +148,13 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     private void verifyNothingReverted() throws Exception, IOException, InterruptedException {
-        final FreeStyleBuild revertedBuild = scheduleBuild();
+        revertedBuild = scheduleBuild();
         assertEquals(REVISION_THAT_TRIGGERED_CURRENT_BUILD, revertedBuild.getEnvironment().get("SVN_REVISION"));
+    }
+
+    private void verifySometingReverted() throws Exception, IOException, InterruptedException {
+        revertedBuild = scheduleBuild();
+        assertEquals(NEXT_SVN_REVISION, revertedBuild.getEnvironment().get("SVN_REVISION"));
     }
 
 }
