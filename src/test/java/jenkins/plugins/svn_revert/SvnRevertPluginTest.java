@@ -58,7 +58,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         assertThat(logFor(currentBuild), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
         assertBuildStatus(Result.SUCCESS, currentBuild);
-
         verifyNothingReverted();
     }
 
@@ -67,7 +66,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
         assertBuildStatus(Result.UNSTABLE, currentBuild);
-
         verifySometingReverted();
     }
 
