@@ -37,17 +37,14 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
-        svnUrl = "file://" + repo.getPath();
-        scm = new SubversionSCM(svnUrl);
+        givenSubversionScmWithOneRepo();
     }
 
     public void testShouldNotRevertWhenNotSubversionSCM() throws Exception {
         givenJobWithNullScm();
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
-        assertThat(currentBuild.getLog(LOG_LIMIT).toString(),
-                containsString(Messenger.NOT_SUBVERSION_SCM));
+        assertThat(logFor(currentBuild), containsString(Messenger.NOT_SUBVERSION_SCM));
         assertBuildStatus(Result.UNSTABLE, currentBuild);
     }
 
@@ -57,8 +54,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         final FreeStyleBuild build = scheduleBuild();
 
-        assertThat(build.getLog(LOG_LIMIT).toString(),
-                containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
+        assertThat(logFor(build), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
         assertBuildStatus(Result.SUCCESS, build);
 
         verifyNothingReverted();
@@ -79,11 +75,17 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         final FreeStyleBuild currentBuild = givenPreviousJobSuccessfulAndCurrentUnstable();
 
-        final String log = currentBuild.getLog(LOG_LIMIT).toString();
+        final String log = logFor(currentBuild);
         System.out.println(log);
         assertThat(log, containsString(svnUrl));
         assertThat(log, containsString(REVISION_THAT_TRIGGERED_PREVIOUS_BUILD + ":"
                 + REVISION_THAT_TRIGGERED_CURRENT_BUILD));
+    }
+
+    private void givenSubversionScmWithOneRepo() throws Exception {
+        final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
+        svnUrl = "file://" + repo.getPath();
+        scm = new SubversionSCM(svnUrl);
     }
 
     private void givenChangesInSubversion() throws Exception {
@@ -112,6 +114,10 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         job = createFreeStyleProject("subversion-scm-job");
         job.getPublishersList().add(new JenkinsGlue(""));
         job.setScm(scm);
+    }
+
+    private String logFor(final FreeStyleBuild currentBuild) throws IOException {
+        return currentBuild.getLog(LOG_LIMIT).toString();
     }
 
     private FreeStyleBuild scheduleBuild() throws Exception {
