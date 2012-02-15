@@ -108,15 +108,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertFileReverted(CHANGED_FILE);
     }
 
-    private FreeStyleBuild whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges()
-            throws Exception {
-        givenPreviousBuildSuccessful();
-        givenTwoChangesInSubversionIn(CHANGED_FILE);
-        givenNextBuildWillBe(UNSTABLE);
-
-        return scheduleBuild();
-    }
-
     private void givenSubversionScmWithOneModule() throws Exception {
         final File repo = getRepoWithTwoModules();
         svnUrl = "file://" + repo.getPath() + "/module1";
@@ -140,15 +131,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final String[] repoLocations= new String[]{ "module1", "module1" };
         scm = new SubversionSCM(svnUrls, repoLocations, true, null);
         job.setScm(scm);
-    }
-
-    /**
-     * Repo at revision 1 with structure
-     * module1/file1
-     * module2/file2
-     */
-    private File getRepoWithTwoModules() throws Exception {
-        return new CopyExisting(getClass().getResource("repoWithTwoModules.zip")).allocate();
     }
 
     private void givenPreviousBuildSuccessful() throws Exception {
@@ -179,6 +161,44 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return scheduleBuild();
     }
 
+    private FreeStyleBuild whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges()
+            throws Exception {
+        givenPreviousBuildSuccessful();
+        givenTwoChangesInSubversionIn(CHANGED_FILE);
+        givenNextBuildWillBe(UNSTABLE);
+
+        return scheduleBuild();
+    }
+
+    private void assertNothingReverted() throws Exception, IOException, InterruptedException {
+        assertEquals(ONE_COMMIT, getRevisionAfterCurrentBuild());
+    }
+
+    private void assertFileReverted(final String path)
+            throws IOException, InterruptedException, ExecutionException, Exception {
+
+        final FreeStyleBuild job = getIndependentSubversionBuild(scm);
+        final FilePath file = job.getWorkspace().child(path);
+        assertFalse("File '" + path + "' is not reverted (because it exists)", file.exists());
+    }
+
+    private void assertThatStringContainsTimes(
+            final String log, final String string, final int times) {
+        assertThat(log.split(string).length, is(times + 1));
+
+    }
+
+    /**
+     * Repo at revision 1 with structure
+     *   module1/
+     *           file1
+     *   module2/
+     *           file2
+     */
+    private File getRepoWithTwoModules() throws Exception {
+        return new CopyExisting(getClass().getResource("repoWithTwoModules.zip")).allocate();
+    }
+
     private String logFor(final FreeStyleBuild build) throws IOException {
         final List<String> logLines = build.getLog(LOG_LIMIT);
         System.out.println("Build log: ");
@@ -197,54 +217,37 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return job.scheduleBuild2(0).get();
     }
 
+    @SuppressWarnings("rawtypes")
     private void createCommit(final String... paths) throws Exception {
-        final FreeStyleBuild b = getIndependentSubversionJob(scm);
+        final FreeStyleBuild b = getIndependentSubversionBuild(scm);
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject)null);
 
         final List<File> added = new ArrayList<File>();
         for (final String path : paths) {
-            final FilePath newFile = b.getWorkspace().child(path);
-            added.add(new File(newFile.getRemote()));
-            if (!newFile.exists()) {
-                newFile.touch(System.currentTimeMillis());
-                svnm.getWCClient().doAdd(new File(newFile.getRemote()),false,false,false, SVNDepth.INFINITY, false,false);
+            final FilePath file = b.getWorkspace().child(path);
+            added.add(new File(file.getRemote()));
+            if (!file.exists()) {
+                file.touch(System.currentTimeMillis());
+                svnm.getWCClient().doAdd(new File(file.getRemote()),false,false,false, SVNDepth.INFINITY, false,false);
             } else {
-                newFile.write("random content","UTF-8");
+                file.write("random content","UTF-8");
             }
         }
         final SVNCommitClient cc = svnm.getCommitClient();
         cc.doCommit(added.toArray(new File[added.size()]),false,"added",null,null,false,false,SVNDepth.EMPTY);
     }
 
-    private void assertNothingReverted() throws Exception, IOException, InterruptedException {
-        assertEquals(ONE_COMMIT, revisionAfterCurrentBuild());
-    }
-
-    private void assertFileReverted(final String path)
-            throws IOException, InterruptedException, ExecutionException, Exception {
-
-        final FreeStyleBuild job = getIndependentSubversionJob(scm);
-        final FilePath file = job.getWorkspace().child(path);
-        assertFalse("File '" + path + "' is not reverted (because it exists)", file.exists());
-    }
-
-    private FreeStyleBuild getIndependentSubversionJob(final SubversionSCM scm) throws IOException,
+    private FreeStyleBuild getIndependentSubversionBuild(final SubversionSCM scm) throws IOException,
             Exception, InterruptedException, ExecutionException {
         final FreeStyleProject forCommit = createFreeStyleProject();
         forCommit.setScm(scm);
         forCommit.setAssignedLabel(hudson.getSelfLabel());
-        final FreeStyleBuild b = assertBuildStatusSuccess(forCommit.scheduleBuild2(0).get());
-        return b;
+        final FreeStyleBuild build = assertBuildStatusSuccess(forCommit.scheduleBuild2(0).get());
+        return build;
     }
 
-    private String revisionAfterCurrentBuild() throws IOException, InterruptedException, Exception {
+    private String getRevisionAfterCurrentBuild() throws IOException, InterruptedException, Exception {
         return scheduleBuild().getEnvironment().get("SVN_REVISION");
-    }
-
-    private void assertThatStringContainsTimes(
-            final String log, final String string, final int times) {
-        assertThat(log.split(string).length, is(times + 1));
-
     }
 
 }
