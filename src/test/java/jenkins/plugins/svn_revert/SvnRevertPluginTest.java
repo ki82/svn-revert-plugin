@@ -29,15 +29,15 @@ import org.tmatesoft.svn.core.wc.SVNCommitClient;
 @SuppressWarnings("deprecation")
 public class SvnRevertPluginTest extends HudsonTestCase {
 
-    private static final String REVISION_THAT_TRIGGERED_CURRENT_BUILD = "6";
-    private static final String REVISION_THAT_TRIGGERED_PREVIOUS_BUILD = "5";
-    private static final String NEXT_SVN_REVISION = "7";
+    private static final String ONE_REVERTED_REVISION = "1:2";
+    private static final String TWO_REVERTED_REVISIONS = "1:3";
+    private static final String ONE_COMMIT = "2";
+    private static final String TWO_COMMITS = "3";
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
     private String svnUrl;
     private SubversionSCM scm;
     private FreeStyleBuild currentBuild;
-    private FreeStyleBuild revertedBuild;
 
     @Override
     protected void setUp() throws Exception {
@@ -72,8 +72,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         final String buildLog = logFor(currentBuild);
         assertThat(buildLog, containsString(svnUrl));
-        assertThat(buildLog, containsString(REVISION_THAT_TRIGGERED_PREVIOUS_BUILD + ":"
-                + REVISION_THAT_TRIGGERED_CURRENT_BUILD));
+        assertThat(buildLog, containsString(ONE_REVERTED_REVISION));
         assertBuildStatus(UNSTABLE, currentBuild);
         verifySometingReverted();
     }
@@ -89,7 +88,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final String log = logFor(currentBuild);
         assertThat(log, containsString("module1"));
         assertThat(log, containsString("module2"));
-        assertThatStringContainsTimes(log, "1:2", 2);
+        assertThatStringContainsTimes(log, ONE_REVERTED_REVISION, 2);
     }
 
     public void testCanRevertMultipleRevisions() throws Exception {
@@ -98,7 +97,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         final String log = logFor(currentBuild);
         assertThat(log, containsString(svnUrl));
-        assertThat(log, containsString("5:7"));
+        assertThat(log, containsString(TWO_REVERTED_REVISIONS));
 
     }
 
@@ -112,7 +111,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     private void givenSubversionScmWithOneRepo() throws Exception {
-        final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
+        final File repo = getRepoWithTwoModules();
         svnUrl = "file://" + repo.getPath();
         scm = new SubversionSCM(svnUrl);
     }
@@ -206,13 +205,15 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     private void verifyNothingReverted() throws Exception, IOException, InterruptedException {
-        revertedBuild = scheduleBuild();
-        assertEquals(REVISION_THAT_TRIGGERED_CURRENT_BUILD, revertedBuild.getEnvironment().get("SVN_REVISION"));
+        assertEquals(ONE_COMMIT, revisionAfterCurrentBuild());
     }
 
     private void verifySometingReverted() throws Exception, IOException, InterruptedException {
-        revertedBuild = scheduleBuild();
-        assertEquals(NEXT_SVN_REVISION, revertedBuild.getEnvironment().get("SVN_REVISION"));
+        assertEquals(TWO_COMMITS, revisionAfterCurrentBuild());
+    }
+
+    private String revisionAfterCurrentBuild() throws IOException, InterruptedException, Exception {
+        return scheduleBuild().getEnvironment().get("SVN_REVISION");
     }
 
     private void assertThatStringContainsTimes(

@@ -42,10 +42,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private static final String LOCAL_REPO_2 = "local2" + File.separator;
     private static final String REMOTE_REPO = "remote";
     private static final String REMOTE_REPO_2 = "remote2";
-    private static final int FROM_REVISION = 911;
-    private static final int TO_REVISION = FROM_REVISION - 1;
-    private static final int FROM_REVISION_2 = 112;
-    private static final int TO_REVISION_2 = FROM_REVISION_2 - 1;
+    private static final int FIRST_CHANGE = 911;
+    private static final int SECOND_CHANGE = FIRST_CHANGE + 1;
 
     private SvnReverter reverter;
 
@@ -91,11 +89,11 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     @Before
     public void setup() {
+        changeLogSet = new FakeChangeLogSet(build, entries);
+        when(build.getChangeSet()).thenReturn(changeLogSet);
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
-        changeLogSet = new FakeChangeLogSet(build, entries);
-        when(build.getChangeSet()).thenReturn(changeLogSet);
         when(subversionScm.getLocations(environmentVariables, build)).thenAnswer(getModuleLocationAnswer());
         reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, revertMessage);
     }
@@ -134,7 +132,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(messenger).informReverted(Revisions.create(FROM_REVISION), REMOTE_REPO);
+        verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO);
     }
 
     @Test
@@ -152,7 +150,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(svnKitClient).merge(Revisions.create(FROM_REVISION), svnUrl, moduleDir);
+        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl, moduleDir);
     }
 
     @Test
@@ -161,10 +159,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(messenger).informReverted(Revisions.create(FROM_REVISION), REMOTE_REPO);
-        verify(messenger).informReverted(Revisions.create(FROM_REVISION), REMOTE_REPO_2);
-        verify(svnKitClient).merge(Revisions.create(FROM_REVISION), svnUrl, moduleDir);
-        verify(svnKitClient).merge(Revisions.create(FROM_REVISION), svnUrl2, moduleDir2);
+        verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO);
+        verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO_2);
+        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl, moduleDir);
+        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl2, moduleDir2);
         verify(svnKitClient).commit(revertMessage, moduleDir, moduleDir2);
         verifyNoMoreInteractions(svnKitClient);
     }
@@ -182,18 +180,18 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Test
     public void shouldRevertMultipleRevisionsWhenMultipleCommitsSinceLastBuild() throws Exception {
         givenAllRevertConditionsMet();
-        givenChangedRevisionsIn(LOCAL_REPO, FROM_REVISION + 1);
+        givenChangedRevisionsIn(LOCAL_REPO, SECOND_CHANGE);
 
         reverter.revert(subversionScm);
 
-        verify(svnKitClient).merge(Revisions.create(FROM_REVISION, FROM_REVISION + 1), svnUrl, moduleDir);
+        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE, SECOND_CHANGE), svnUrl, moduleDir);
     }
 
     private void givenAllRevertConditionsMetForTwoModulesInSameRepo() throws Exception,
             IOException, InterruptedException {
         givenAllRevertConditionsMet();
         givenModuleLocations(moduleDir2, svnUrl2, REMOTE_REPO_2, LOCAL_REPO_2);
-        givenChangedRevisionsIn(LOCAL_REPO_2, FROM_REVISION);
+        givenChangedRevisionsIn(LOCAL_REPO_2, FIRST_CHANGE);
     }
 
     private void givenRepositoryWithoutChanges() throws Exception {
@@ -216,7 +214,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     }
 
     private void givenChangesInFirstRepository() {
-        givenChangedRevisionsIn(LOCAL_REPO, FROM_REVISION);
+        givenChangedRevisionsIn(LOCAL_REPO, FIRST_CHANGE);
     }
 
     private void givenChangedRevisionsIn(final String path, final int revision) {
