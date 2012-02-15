@@ -27,8 +27,6 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 @SuppressWarnings("deprecation")
 public class SvnRevertPluginTest extends HudsonTestCase {
 
-    private static final String CHANGED_FILE = "random_file.txt";
-    private static final String CHANGED_FILE_IN_MODULE_1 = "module1" + File.separator + CHANGED_FILE;
     private static final String NO_COMMITS = "1";
     private static final String ONE_COMMIT = "2";
     private static final String TWO_COMMITS = "3";
@@ -36,6 +34,9 @@ public class SvnRevertPluginTest extends HudsonTestCase {
             String.format(" %s:%s ", NO_COMMITS, ONE_COMMIT);
     private static final String TWO_REVERTED_REVISIONS =
             String.format(" %s:%s ", NO_COMMITS, TWO_COMMITS);
+    private static final String MODIFIED_FILE = "modified_file.txt";
+    private static final String MODIFIED_FILE_IN_MODULE_1 =
+            "module1" + File.separator + MODIFIED_FILE;
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
     private String svnUrl;
@@ -59,7 +60,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     public void testShouldNotRevertWhenBuildStatusIsSuccess() throws Exception {
         givenJobWithSubversionScm();
-        givenChangesInSubversion(CHANGED_FILE);
+        givenChangesInSubversion(MODIFIED_FILE);
 
         currentBuild = scheduleBuild();
 
@@ -77,13 +78,13 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThat(buildLog, containsString(svnUrl));
         assertThat(buildLog, containsString(ONE_REVERTED_REVISION));
         assertBuildStatus(UNSTABLE, currentBuild);
-        assertFileReverted(CHANGED_FILE);
+        assertFileReverted(MODIFIED_FILE);
     }
 
     public void testCanRevertMultipleModulesInSameRepository() throws Exception {
         givenJobWithTwoModulesInSameRepository();
         givenPreviousBuildSuccessful();
-        givenChangesInSubversion(CHANGED_FILE_IN_MODULE_1);
+        givenChangesInSubversion(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
 
         currentBuild = scheduleBuild();
@@ -92,7 +93,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThat(log, containsString("module1"));
         assertThat(log, containsString("module2"));
         assertThatStringContainsTimes(log, ONE_REVERTED_REVISION, 2);
-        assertFileReverted(CHANGED_FILE_IN_MODULE_1);
+        assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
     }
 
     public void testCanRevertMultipleRevisions() throws Exception {
@@ -103,7 +104,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final String log = logFor(currentBuild);
         assertThat(log, containsString(svnUrl));
         assertThat(log, containsString(TWO_REVERTED_REVISIONS));
-        assertFileReverted(CHANGED_FILE);
+        assertFileReverted(MODIFIED_FILE);
     }
 
     private void givenSubversionScmWithOneModule() throws Exception {
@@ -156,7 +157,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private FreeStyleBuild whenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
             InterruptedException, ExecutionException {
         givenPreviousBuildSuccessful();
-        givenChangesInSubversion(CHANGED_FILE);
+        givenChangesInSubversion(MODIFIED_FILE);
         givenNextBuildWillBe(UNSTABLE);
         return scheduleBuild();
     }
@@ -164,7 +165,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private FreeStyleBuild whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges()
             throws Exception {
         givenPreviousBuildSuccessful();
-        givenTwoChangesInSubversionIn(CHANGED_FILE);
+        givenTwoChangesInSubversionIn(MODIFIED_FILE);
         givenNextBuildWillBe(UNSTABLE);
 
         return scheduleBuild();
