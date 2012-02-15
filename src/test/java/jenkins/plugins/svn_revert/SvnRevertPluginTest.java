@@ -3,6 +3,7 @@ package jenkins.plugins.svn_revert;
 import static hudson.model.Result.SUCCESS;
 import static hudson.model.Result.UNSTABLE;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import hudson.FilePath;
 import hudson.model.FreeStyleBuild;
@@ -97,9 +98,9 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         currentBuild = scheduleBuild();
 
         final String log = logFor(currentBuild);
-        assertThat(log, (containsString("1:2")));
-        assertThat(log, (containsString("module1")));
-        assertThat(log, (containsString("module2")));
+        assertThat(log, containsString("module1"));
+        assertThat(log, containsString("module2"));
+        assertThatStringContainsTimes(log, "1:2", 2);
     }
 
     private void givenSubversionScmWithOneRepo() throws Exception {
@@ -180,6 +181,12 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private void verifySometingReverted() throws Exception, IOException, InterruptedException {
         revertedBuild = scheduleBuild();
         assertEquals(NEXT_SVN_REVISION, revertedBuild.getEnvironment().get("SVN_REVISION"));
+    }
+
+    private void assertThatStringContainsTimes(
+            final String log, final String string, final int times) {
+        assertThat(log.split(string).length, is(times-1));
+    
     }
 
 }

@@ -2,7 +2,12 @@ package jenkins.plugins.svn_revert;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -26,6 +31,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 
 import com.google.common.collect.Lists;
@@ -74,6 +80,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private SVNURL svnUrl;
     @Mock
     private SVNURL svnUrl2;
+    @Mock
+    private SVNException svnException;
 
     private final IOException ioException = new IOException();
 
@@ -160,6 +168,16 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         verify(svnKitClient).merge(FROM_REVISION, TO_REVISION, svnUrl2, moduleDir2);
         verify(svnKitClient).commit(revertMessage, moduleDir, moduleDir2);
         verifyNoMoreInteractions(svnKitClient);
+    }
+
+    @Test
+    public void shouldNotLogRevertedWhenCommitFails() throws Exception {
+        givenAllRevertConditionsMet();
+        doThrow(svnException).when(svnKitClient).commit(anyString(), any(File.class));
+
+        reverter.revert(subversionScm);
+
+        verify(messenger, never()).informReverted(anyInt(), anyInt(), anyString());
     }
 
     private void givenAllRevertConditionsMetForTwoModulesInSameRepo() throws Exception,

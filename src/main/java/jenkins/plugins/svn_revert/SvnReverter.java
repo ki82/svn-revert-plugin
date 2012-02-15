@@ -71,14 +71,20 @@ class SvnReverter {
             messenger.log("Reverting in module " + moduleLocation.getLocalDir().toString());
             svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
 
-            messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
-
             moduleDirs.add(moduleDir);
         }
 
         svnKitClient.commit(revertMessage, moduleDirs.toArray(new File[0]));
 
+        informReverted(revisionNumber, moduleLocations);
+
         return true;
+    }
+
+    private void informReverted(final int revisionNumber, final List<ModuleLocation> moduleLocations) {
+        for (final ModuleLocation moduleLocation : moduleLocations) {
+            messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
+        }
     }
 
     private List<Integer> getChangeRevisions() {
