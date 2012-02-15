@@ -35,8 +35,8 @@ class SvnKitClient {
     @SuppressWarnings("deprecation")
     void commit(final String revertMessage, final File... moduleDirectories) throws SVNException, IOException {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
-        commitClient.doCommit(getCanonicalFiles(moduleDirectories), true,
-                revertMessage, false, true);
+        commitClient.doCommit(getCanonicalFiles(moduleDirectories), true, revertMessage, false,
+                true);
     }
 
     private File[] getCanonicalFiles(final File... moduleDirectories) throws IOException {
