@@ -92,6 +92,15 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThatStringContainsTimes(log, "1:2", 2);
     }
 
+    private void givenSubversionScmWithOneRepo() throws Exception {
+        final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
+        svnUrl = "file://" + repo.getPath();
+        scm = new SubversionSCM(svnUrl);
+    }
+
+    private void givenChangesInSubversion() throws Exception {
+        createCommit(scm, "random_file.txt");
+    }
 
     private void givenJobWithTwoModulesInSameRepository() throws Exception, IOException {
         givenJobWithSubversionScm();
@@ -112,24 +121,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return new CopyExisting(getClass().getResource("repoWithTwoModules.zip")).allocate();
     }
 
-    private void givenSubversionScmWithOneRepo() throws Exception {
-        final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
-        svnUrl = "file://" + repo.getPath();
-        scm = new SubversionSCM(svnUrl);
-    }
-
-    private void givenChangesInSubversion() throws Exception {
-        createCommit(scm, "random_file.txt");
-    }
-
-    private FreeStyleBuild whenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
-            InterruptedException, ExecutionException {
-        givenPreviousBuildSuccessful();
-        givenChangesInSubversion();
-        givenNextBuildWillBe(UNSTABLE);
-        return scheduleBuild();
-    }
-
     private void givenPreviousBuildSuccessful() throws Exception {
         assertBuildStatusSuccess(scheduleBuild());
     }
@@ -148,6 +139,14 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         job = createFreeStyleProject("subversion-scm-job");
         job.getPublishersList().add(new JenkinsGlue(""));
         job.setScm(scm);
+    }
+
+    private FreeStyleBuild whenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
+            InterruptedException, ExecutionException {
+        givenPreviousBuildSuccessful();
+        givenChangesInSubversion();
+        givenNextBuildWillBe(UNSTABLE);
+        return scheduleBuild();
     }
 
     private String logFor(final FreeStyleBuild build) throws IOException {
