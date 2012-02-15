@@ -96,12 +96,12 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     public void testCanRevertMultipleRevisions() throws Exception {
         givenJobWithSubversionScm();
+
         currentBuild = whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges();
 
         final String log = logFor(currentBuild);
         assertThat(log, containsString(svnUrl));
         assertThat(log, containsString(TWO_REVERTED_REVISIONS));
-
     }
 
     private FreeStyleBuild whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges()
