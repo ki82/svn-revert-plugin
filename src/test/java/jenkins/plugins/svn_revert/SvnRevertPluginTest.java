@@ -79,18 +79,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     public void testCanRevertMultipleModulesInSameRepository() throws Exception {
-        givenJobWithSubversionScm();
-        /*
-         * Repo at revision 1 with structure
-         * module1/file1
-         * module2/file2
-         */
-        final File repo = new CopyExisting(getClass().getResource("repoWithTwoModules.zip")).allocate();
-        svnUrl = "file://" + repo.getPath();
-        final String[] svnUrls = new String[]{ svnUrl + "/module1", svnUrl + "/module2" };
-        final String[] repoLocations= new String[]{"module1", "module1"};
-        scm = new SubversionSCM(svnUrls, repoLocations, true, null);
-        job.setScm(scm);
+        givenJobWithTwoModulesInSameRepository();
         givenPreviousBuildSuccessful();
         createCommit(scm, "module1" + File.separator + "file1");
         givenNextBuildWillBe(UNSTABLE);
@@ -101,6 +90,26 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThat(log, containsString("module1"));
         assertThat(log, containsString("module2"));
         assertThatStringContainsTimes(log, "1:2", 2);
+    }
+
+
+    private void givenJobWithTwoModulesInSameRepository() throws Exception, IOException {
+        givenJobWithSubversionScm();
+        final File repo = getRepoWithTwoModules();
+        svnUrl = "file://" + repo.getPath();
+        final String[] svnUrls = new String[]{ svnUrl + "/module1", svnUrl + "/module2" };
+        final String[] repoLocations= new String[]{"module1", "module1"};
+        scm = new SubversionSCM(svnUrls, repoLocations, true, null);
+        job.setScm(scm);
+    }
+
+    /**
+     * Repo at revision 1 with structure
+     * module1/file1
+     * module2/file2
+     */
+    private File getRepoWithTwoModules() throws Exception {
+        return new CopyExisting(getClass().getResource("repoWithTwoModules.zip")).allocate();
     }
 
     private void givenSubversionScmWithOneRepo() throws Exception {
@@ -185,8 +194,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     private void assertThatStringContainsTimes(
             final String log, final String string, final int times) {
-        assertThat(log.split(string).length, is(times-1));
-    
+        assertThat(log.split(string).length, is(times + 1));
+
     }
 
 }
