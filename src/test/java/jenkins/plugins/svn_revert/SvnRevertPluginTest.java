@@ -179,8 +179,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private void assertFileReverted(final String path)
             throws IOException, InterruptedException, ExecutionException, Exception {
 
-        final FreeStyleBuild job = getIndependentSubversionBuild(scm);
-        final FilePath file = job.getWorkspace().child(path);
+        final FreeStyleBuild build = getIndependentSubversionBuild(scm);
+        final FilePath file = build.getWorkspace().child(path);
         assertFalse("File '" + path + "' is not reverted (because it exists)", file.exists());
     }
 
