@@ -130,7 +130,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final File repo = getRepoWithTwoModules();
         svnUrl = "file://" + repo.getPath();
         final String[] svnUrls = new String[]{ svnUrl + "/module1", svnUrl + "/module2" };
-        final String[] repoLocations= new String[]{"module1", "module1"};
+        final String[] repoLocations= new String[]{ "module1", "module1" };
         scm = new SubversionSCM(svnUrls, repoLocations, true, null);
         job.setScm(scm);
     }
