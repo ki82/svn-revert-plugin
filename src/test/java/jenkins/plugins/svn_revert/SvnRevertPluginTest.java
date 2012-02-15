@@ -173,9 +173,17 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     private String logFor(final FreeStyleBuild build) throws IOException {
-        final String log = build.getLog(LOG_LIMIT).toString();
-        System.out.println("Log for build: " + log);
+        final List<String> logLines = build.getLog(LOG_LIMIT);
+        System.out.println("Build log: ");
+        printLog(logLines);
+        final String log = logLines.toString();
         return log;
+    }
+
+    private void printLog(final List<String> logLines) {
+        for (final String logLine : logLines) {
+            System.out.println("   " + logLine);
+        }
     }
 
     private FreeStyleBuild scheduleBuild() throws Exception {
