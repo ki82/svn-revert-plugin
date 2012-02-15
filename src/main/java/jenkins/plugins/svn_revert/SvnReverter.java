@@ -68,7 +68,6 @@ class SvnReverter {
         for (final ModuleLocation moduleLocation : moduleLocations) {
             final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
 
-            messenger.log("Reverting in module " + moduleLocation.getLocalDir().toString());
             svnKitClient.merge(revisions, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
 
             moduleDirs.add(moduleDir);
