@@ -77,6 +77,31 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         verifySometingReverted();
     }
 
+    public void testCanRevertMultipleModulesInSameRepository() throws Exception {
+        givenJobWithSubversionScm();
+        /*
+         * Repo at revision 1 with structure
+         * module1/file1
+         * module2/file2
+         */
+        final File repo = new CopyExisting(getClass().getResource("repoWithTwoModules.zip")).allocate();
+        svnUrl = "file://" + repo.getPath();
+        final String[] svnUrls = new String[]{ svnUrl + "/module1", svnUrl + "/module2" };
+        final String[] repoLocations= new String[]{"module1", "module1"};
+        scm = new SubversionSCM(svnUrls, repoLocations, true, null);
+        job.setScm(scm);
+        givenPreviousBuildSuccessful();
+        createCommit(scm, "module1" + File.separator + "file1");
+        givenNextBuildWillBe(UNSTABLE);
+
+        currentBuild = scheduleBuild();
+
+        final String log = logFor(currentBuild);
+        assertThat(log, (containsString("1:2")));
+        assertThat(log, (containsString("module1")));
+        assertThat(log, (containsString("module2")));
+    }
+
     private void givenSubversionScmWithOneRepo() throws Exception {
         final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
         svnUrl = "file://" + repo.getPath();

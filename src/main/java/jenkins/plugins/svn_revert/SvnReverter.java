@@ -62,13 +62,21 @@ class SvnReverter {
         final EnvVars envVars = build.getEnvironment(listener);
         final int revisionNumber = getChangeRevisions().get(0);
 
-        final ModuleLocation moduleLocation = subversionScm.getLocations(envVars, build)[0];
-        final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
+        final List<ModuleLocation> moduleLocations =
+                Lists.newArrayList(subversionScm.getLocations(envVars, build));
+        final List<File> moduleDirs = Lists.newArrayList();
+        for (final ModuleLocation moduleLocation : moduleLocations) {
+            final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
 
-        svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
-        svnKitClient.commit(moduleDir, revertMessage);
+            messenger.log("Reverting in module " + moduleLocation.getLocalDir().toString());
+            svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
 
-        messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
+            messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
+
+            moduleDirs.add(moduleDir);
+        }
+
+        svnKitClient.commit(revertMessage, moduleDirs.toArray(new File[0]));
 
         return true;
     }
