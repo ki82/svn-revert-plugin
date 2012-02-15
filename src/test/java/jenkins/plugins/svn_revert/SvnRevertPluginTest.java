@@ -15,7 +15,6 @@ import hudson.scm.SubversionSCM;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -24,7 +23,6 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
-import org.tmatesoft.svn.core.wc.SVNCommitClient;
 
 @SuppressWarnings("deprecation")
 public class SvnRevertPluginTest extends HudsonTestCase {
@@ -115,12 +113,12 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     private void givenChangesInSubversion(final String file) throws Exception {
-        createCommit(file);
+        modifyAndCommit(file);
     }
 
     private void givenTwoChangesInSubversionIn(final String file) throws Exception {
-        createCommit(file);
-        createCommit(file);
+        modifyAndCommit(file);
+        modifyAndCommit(file);
     }
 
     private void givenJobWithTwoModulesInSameRepository() throws Exception, IOException {
@@ -220,23 +218,21 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     @SuppressWarnings("rawtypes")
-    private void createCommit(final String... paths) throws Exception {
-        final FreeStyleBuild b = getIndependentSubversionBuild(scm);
-        final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject)null);
+    private void modifyAndCommit(final String path) throws Exception {
+        final FreeStyleBuild build = getIndependentSubversionBuild(scm);
+        final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
 
-        final List<File> added = new ArrayList<File>();
-        for (final String path : paths) {
-            final FilePath file = b.getWorkspace().child(path);
-            added.add(new File(file.getRemote()));
-            if (!file.exists()) {
-                file.touch(System.currentTimeMillis());
-                svnm.getWCClient().doAdd(new File(file.getRemote()),false,false,false, SVNDepth.INFINITY, false,false);
-            } else {
-                file.write("random content","UTF-8");
-            }
+        final FilePath file = build.getWorkspace().child(path);
+        if (!file.exists()) {
+            file.touch(System.currentTimeMillis());
+            svnm.getWCClient().doAdd(new File(file.getRemote()), false, false, false,
+                    SVNDepth.INFINITY, false, false);
+        } else {
+            file.write("random content", "UTF-8");
         }
-        final SVNCommitClient cc = svnm.getCommitClient();
-        cc.doCommit(added.toArray(new File[added.size()]),false,"added",null,null,false,false,SVNDepth.EMPTY);
+
+        svnm.getCommitClient().doCommit(new File[] { new File(file.getRemote()) }, false,
+                "test changes", null, null, false, false, SVNDepth.EMPTY);
     }
 
     private FreeStyleBuild getIndependentSubversionBuild(final SubversionSCM scm) throws IOException,
