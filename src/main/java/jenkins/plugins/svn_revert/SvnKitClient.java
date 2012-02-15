@@ -21,13 +21,13 @@ class SvnKitClient {
         this.clientManager = clientManager;
     }
 
-    void merge(final int fromRevision, final int toRevision, final SVNURL svnurl,
+    void merge(final Revisions revisions, final SVNURL svnurl,
             final File moduleDirectory)
     throws SVNException, IOException {
         final SVNRevisionRange range = new SVNRevisionRange(
-                SVNRevision.create(fromRevision), SVNRevision.create(toRevision));
+                SVNRevision.create(revisions.getLast()), SVNRevision.create(revisions.getBefore()));
         final SVNDiffClient diffClient = clientManager.getDiffClient();
-        diffClient.doMerge(svnurl, SVNRevision.create(fromRevision),
+        diffClient.doMerge(svnurl, SVNRevision.create(revisions.getLast()),
                 Collections.singleton(range), moduleDirectory.getCanonicalFile(), SVNDepth.INFINITY,
                 true, false, false, false);
     }

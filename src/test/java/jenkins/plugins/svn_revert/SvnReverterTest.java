@@ -3,7 +3,6 @@ package jenkins.plugins.svn_revert;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -135,7 +134,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(messenger).informReverted(FROM_REVISION, TO_REVISION, REMOTE_REPO);
+        verify(messenger).informReverted(Revisions.create(FROM_REVISION), REMOTE_REPO);
     }
 
     @Test
@@ -153,7 +152,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(svnKitClient).merge(FROM_REVISION, TO_REVISION, svnUrl, moduleDir);
+        verify(svnKitClient).merge(Revisions.create(FROM_REVISION), svnUrl, moduleDir);
     }
 
     @Test
@@ -162,10 +161,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(messenger).informReverted(FROM_REVISION, TO_REVISION, REMOTE_REPO);
-        verify(messenger).informReverted(FROM_REVISION, TO_REVISION, REMOTE_REPO_2);
-        verify(svnKitClient).merge(FROM_REVISION, TO_REVISION, svnUrl, moduleDir);
-        verify(svnKitClient).merge(FROM_REVISION, TO_REVISION, svnUrl2, moduleDir2);
+        verify(messenger).informReverted(Revisions.create(FROM_REVISION), REMOTE_REPO);
+        verify(messenger).informReverted(Revisions.create(FROM_REVISION), REMOTE_REPO_2);
+        verify(svnKitClient).merge(Revisions.create(FROM_REVISION), svnUrl, moduleDir);
+        verify(svnKitClient).merge(Revisions.create(FROM_REVISION), svnUrl2, moduleDir2);
         verify(svnKitClient).commit(revertMessage, moduleDir, moduleDir2);
         verifyNoMoreInteractions(svnKitClient);
     }
@@ -177,7 +176,17 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(messenger, never()).informReverted(anyInt(), anyInt(), anyString());
+        verify(messenger, never()).informReverted(any(Revisions.class), anyString());
+    }
+
+    @Test
+    public void shouldRevertMultipleRevisionsWhenMultipleCommitsSinceLastBuild() throws Exception {
+        givenAllRevertConditionsMet();
+        givenChangedRevisionsIn(LOCAL_REPO, FROM_REVISION + 1);
+
+        reverter.revert(subversionScm);
+
+        verify(svnKitClient).merge(Revisions.create(FROM_REVISION, FROM_REVISION + 1), svnUrl, moduleDir);
     }
 
     private void givenAllRevertConditionsMetForTwoModulesInSameRepo() throws Exception,

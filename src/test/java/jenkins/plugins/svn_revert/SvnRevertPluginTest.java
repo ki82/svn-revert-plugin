@@ -92,6 +92,25 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThatStringContainsTimes(log, "1:2", 2);
     }
 
+    public void testCanRevertMultipleRevisions() throws Exception {
+        givenJobWithSubversionScm();
+        currentBuild = whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges();
+
+        final String log = logFor(currentBuild);
+        assertThat(log, containsString(svnUrl));
+        assertThat(log, containsString("5:7"));
+
+    }
+
+    private FreeStyleBuild whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges()
+            throws Exception {
+        givenPreviousBuildSuccessful();
+        givenTwoChangesInSubversion();
+        givenNextBuildWillBe(UNSTABLE);
+
+        return scheduleBuild();
+    }
+
     private void givenSubversionScmWithOneRepo() throws Exception {
         final File repo = new CopyExisting(getClass().getResource("repoAtRevision5.zip")).allocate();
         svnUrl = "file://" + repo.getPath();
@@ -100,6 +119,11 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     private void givenChangesInSubversion() throws Exception {
         createCommit(scm, "random_file.txt");
+    }
+
+    private void givenTwoChangesInSubversion() throws Exception {
+        createCommit(scm, "random_file1.txt");
+        createCommit(scm, "random_file2.txt");
     }
 
     private void givenJobWithTwoModulesInSameRepository() throws Exception, IOException {

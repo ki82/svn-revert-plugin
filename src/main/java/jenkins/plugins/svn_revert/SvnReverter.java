@@ -60,7 +60,7 @@ class SvnReverter {
         svnKitClient = svnFactory.create(rootProject, subversionScm);
 
         final EnvVars envVars = build.getEnvironment(listener);
-        final int revisionNumber = getChangeRevisions().get(0);
+        final Revisions revisions = getChangeRevisions();
 
         final List<ModuleLocation> moduleLocations =
                 Lists.newArrayList(subversionScm.getLocations(envVars, build));
@@ -69,31 +69,31 @@ class SvnReverter {
             final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
 
             messenger.log("Reverting in module " + moduleLocation.getLocalDir().toString());
-            svnKitClient.merge(revisionNumber, revisionNumber - 1, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
+            svnKitClient.merge(revisions, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
 
             moduleDirs.add(moduleDir);
         }
 
         svnKitClient.commit(revertMessage, moduleDirs.toArray(new File[0]));
 
-        informReverted(revisionNumber, moduleLocations);
+        informReverted(revisions, moduleLocations);
 
         return true;
     }
 
-    private void informReverted(final int revisionNumber, final List<ModuleLocation> moduleLocations) {
+    private void informReverted(final Revisions revisions, final List<ModuleLocation> moduleLocations) {
         for (final ModuleLocation moduleLocation : moduleLocations) {
-            messenger.informReverted(revisionNumber, revisionNumber - 1, moduleLocation.getURL());
+            messenger.informReverted(revisions, moduleLocation.getURL());
         }
     }
 
-    private List<Integer> getChangeRevisions() {
+    private Revisions getChangeRevisions() {
         final ChangeLogSet<? extends Entry> cs = build.getChangeSet();
         final List<Integer> revisions = Lists.newArrayList();
         for (final Entry entry : cs) {
             revisions.add(Integer.parseInt(entry.getCommitId(), 10));
         }
-        return revisions;
+        return Revisions.create(revisions);
     }
 
 

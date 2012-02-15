@@ -37,8 +37,8 @@ class Messenger {
         logger.println(NO_SVN_AUTH_PROVIDER);
     }
 
-    void informReverted(final int fromRevision, final int toRevision, final String repository) {
-        logger.format(REVERTED_CHANGES, toRevision, fromRevision, repository);
+    void informReverted(final Revisions revisions, final String repository) {
+        logger.format(REVERTED_CHANGES, revisions.getBefore(), revisions.getLast(), repository);
     }
 
     void informNoChanges() {
