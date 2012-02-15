@@ -29,10 +29,13 @@ import org.tmatesoft.svn.core.wc.SVNCommitClient;
 @SuppressWarnings("deprecation")
 public class SvnRevertPluginTest extends HudsonTestCase {
 
-    private static final String ONE_REVERTED_REVISION = "1:2";
-    private static final String TWO_REVERTED_REVISIONS = "1:3";
+    private static final String NO_COMMITS = "1";
     private static final String ONE_COMMIT = "2";
     private static final String TWO_COMMITS = "3";
+    private static final String ONE_REVERTED_REVISION =
+            String.format(" %s:%s ", NO_COMMITS, ONE_COMMIT);
+    private static final String TWO_REVERTED_REVISIONS =
+            String.format(" %s:%s ", NO_COMMITS, TWO_COMMITS);
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
     private String svnUrl;
