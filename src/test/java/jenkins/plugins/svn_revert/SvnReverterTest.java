@@ -88,13 +88,15 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private final List<ModuleLocation> modules = Lists.newLinkedList();
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         changeLogSet = new FakeChangeLogSet(build, entries);
         when(build.getChangeSet()).thenReturn(changeLogSet);
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
         when(subversionScm.getLocations(environmentVariables, build)).thenAnswer(getModuleLocationAnswer());
+        when(svnKitClient.commit(anyString(), any(File.class))).thenReturn(true);
+        when(svnKitClient.commit(anyString(), any(File.class), any(File.class))).thenReturn(true);
         reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, revertMessage);
     }
 
@@ -133,6 +135,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         reverter.revert(subversionScm);
 
         verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO);
+        verifyNoMoreInteractions(messenger);
     }
 
     @Test
@@ -185,6 +188,17 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         reverter.revert(subversionScm);
 
         verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE, SECOND_CHANGE), svnUrl, moduleDir);
+    }
+
+    @Test
+    public void shouldLogNotRevertedWhenFileIsOutOfDate() throws Exception {
+        givenAllRevertConditionsMet();
+        when(svnKitClient.commit(anyString(), any(File[].class))).thenReturn(false);
+
+        reverter.revert(subversionScm);
+
+        verify(messenger).informFilesToRevertOutOfDate();
+        verifyNoMoreInteractions(messenger);
     }
 
     private void givenAllRevertConditionsMetForTwoModulesInSameRepo() throws Exception,

@@ -120,6 +120,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         assertNothingRevertedSince(TWO_COMMITS);
         assertBuildStatus(UNSTABLE, currentBuild);
+        assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 0);
     }
 
     private void givenSubversionScmWithOneModule() throws Exception {
@@ -200,7 +201,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     private void assertThatStringContainsTimes(
             final String log, final String string, final int times) {
-        assertThat(log.split(string).length, is(times + 1));
+        final int actualTimes = log.split(string).length - 1;
+        assertThat(actualTimes, is(times));
 
     }
 

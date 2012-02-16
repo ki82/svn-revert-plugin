@@ -13,8 +13,11 @@ class Messenger {
     static final String NO_SVN_AUTH_PROVIDER = "No Subversion credentials available.";
     static final String REVERTED_CHANGES =
             "Reverted changes between %d:%d in %s since build became UNSTABLE.\n";
-    public static final String NO_CHANGES =
+    static final String NO_CHANGES =
             "Will not revert since there are no changes in current build.";
+    static final String FILES_TO_REVERT_OUT_OF_DATE =
+            "Tried to revert since build status became UNSTABLE, " +
+            "but failed since files to revert are out of date.";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
@@ -43,6 +46,10 @@ class Messenger {
 
     void informNoChanges() {
         logger.println(NO_CHANGES);
+    }
+
+    void informFilesToRevertOutOfDate() {
+        logger.println(FILES_TO_REVERT_OUT_OF_DATE);
     }
 
     void printStackTraceFor(final Exception exception) {

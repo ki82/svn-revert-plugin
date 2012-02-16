@@ -73,9 +73,12 @@ class SvnReverter {
             moduleDirs.add(moduleDir);
         }
 
-        svnKitClient.commit(revertMessage, moduleDirs.toArray(new File[0]));
+        if (svnKitClient.commit(revertMessage, moduleDirs.toArray(new File[0]))) {
+            informReverted(revisions, moduleLocations);
+        } else {
+            messenger.informFilesToRevertOutOfDate();
+        }
 
-        informReverted(revisions, moduleLocations);
 
         return true;
     }
