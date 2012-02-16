@@ -39,7 +39,7 @@ public class ClaimerTest extends AbstractMockitoTestCase {
         when(changedRevisions.getFor(build)).thenReturn(Revisions.create(3, 4, 7));
         claimer.claim(build);
 
-        verify(claimBuildAction).claim(Claimer.CLAIMED_BY, "Reverted revisions 3, 4, 7", false);
+        verify(claimBuildAction).claim(Claimer.CLAIMED_BY, "Reverted revision(s) 3, 4, 7", false);
     }
 
 
