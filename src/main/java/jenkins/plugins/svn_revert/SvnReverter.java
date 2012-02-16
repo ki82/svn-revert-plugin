@@ -4,8 +4,6 @@ import hudson.EnvVars;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 
@@ -26,16 +24,19 @@ class SvnReverter {
     private final SvnKitClientFactory svnFactory;
     private final ModuleResolver moduleResolver;
     private final String revertMessage;
+    private final ChangedRevisions changedRevisions;
 
     SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
             final Messenger messenger, final SvnKitClientFactory svnFactory,
-            final ModuleResolver moduleResolver, final String revertMessage) {
+            final ModuleResolver moduleResolver, final String revertMessage,
+            final ChangedRevisions changedRevisions) {
         this.build = build;
         this.listener = listener;
         this.messenger = messenger;
         this.svnFactory = svnFactory;
         this.moduleResolver = moduleResolver;
         this.revertMessage = revertMessage;
+        this.changedRevisions = changedRevisions;
     }
 
     boolean revert(final SubversionSCM subversionScm) {
@@ -60,7 +61,7 @@ class SvnReverter {
         svnKitClient = svnFactory.create(rootProject, subversionScm);
 
         final EnvVars envVars = build.getEnvironment(listener);
-        final Revisions revisions = getChangeRevisions();
+        final Revisions revisions = changedRevisions.getFor(build);
 
         final List<ModuleLocation> moduleLocations =
                 Lists.newArrayList(subversionScm.getLocations(envVars, build));
@@ -88,15 +89,5 @@ class SvnReverter {
             messenger.informReverted(revisions, moduleLocation.getURL());
         }
     }
-
-    private Revisions getChangeRevisions() {
-        final ChangeLogSet<? extends Entry> cs = build.getChangeSet();
-        final List<Integer> revisions = Lists.newArrayList();
-        for (final Entry entry : cs) {
-            revisions.add(Integer.parseInt(entry.getCommitId(), 10));
-        }
-        return Revisions.create(revisions);
-    }
-
 
 }

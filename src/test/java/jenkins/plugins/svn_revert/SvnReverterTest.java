@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -19,13 +18,10 @@ import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hudson.test.FakeChangeLogSCM.EntryImpl;
-import org.jvnet.hudson.test.FakeChangeLogSCM.FakeChangeLogSet;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -79,25 +75,23 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private SVNURL svnUrl2;
     @Mock
     private SVNException svnException;
+    @Mock
+    private ChangedRevisions changedRevisions;
 
     private final IOException ioException = new IOException();
 
     private final String revertMessage = "Configured commit message.";
-    private FakeChangeLogSet changeLogSet;
-    private final List<EntryImpl> entries = Lists.newLinkedList();
     private final List<ModuleLocation> modules = Lists.newLinkedList();
 
     @Before
     public void setup() throws Exception {
-        changeLogSet = new FakeChangeLogSet(build, entries);
-        when(build.getChangeSet()).thenReturn(changeLogSet);
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
         when(subversionScm.getLocations(environmentVariables, build)).thenAnswer(getModuleLocationAnswer());
         when(svnKitClient.commit(anyString(), any(File.class))).thenReturn(true);
         when(svnKitClient.commit(anyString(), any(File.class), any(File.class))).thenReturn(true);
-        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, revertMessage);
+        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, revertMessage, changedRevisions);
     }
 
     @Test
@@ -183,7 +177,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Test
     public void shouldRevertMultipleRevisionsWhenMultipleCommitsSinceLastBuild() throws Exception {
         givenAllRevertConditionsMet();
-        givenChangedRevisionsIn(LOCAL_REPO, SECOND_CHANGE);
+        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(FIRST_CHANGE, SECOND_CHANGE));
 
         reverter.revert(subversionScm);
 
@@ -205,7 +199,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
             IOException, InterruptedException {
         givenAllRevertConditionsMet();
         givenModuleLocations(moduleDir2, svnUrl2, REMOTE_REPO_2, LOCAL_REPO_2);
-        givenChangedRevisionsIn(LOCAL_REPO_2, FIRST_CHANGE);
+        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(FIRST_CHANGE));
     }
 
     private void givenRepositoryWithoutChanges() throws Exception {
@@ -219,6 +213,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         givenChangesInFirstRepository();
     }
 
+    private void givenChangesInFirstRepository() {
+        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(FIRST_CHANGE));
+    }
+
     private void givenScmWithAuth() throws Exception {
         when(svnFactory.create(rootProject, subversionScm)).thenReturn(svnKitClient);
     }
@@ -227,18 +225,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(build.getEnvironment(listener)).thenReturn(environmentVariables);
     }
 
-    private void givenChangesInFirstRepository() {
-        givenChangedRevisionsIn(LOCAL_REPO, FIRST_CHANGE);
-    }
-
-    private void givenChangedRevisionsIn(final String path, final int revision) {
-        final EntryImpl entry = mock(EntryImpl.class);
-        when(entry.getCommitId()).thenReturn(Integer.toString(revision));
-        when(entry.getAffectedPaths()).thenReturn(Collections.singleton(path + File.separator + "changed_file.txt"));
-        entries.add(entry);
-    }
-
-    private void givenModuleLocations(final File moduleDir, final SVNURL svnUrl, final String remoteLocation, final String localLocation) throws Exception {
+    private void givenModuleLocations(final File moduleDir, final SVNURL svnUrl,
+            final String remoteLocation, final String localLocation) throws Exception {
         final ModuleLocation moduleLocation = new ModuleLocation(remoteLocation, localLocation);
         modules.add(moduleLocation);
         when(moduleResolver.getModuleRoot(build, moduleLocation)).thenReturn(moduleDir);
