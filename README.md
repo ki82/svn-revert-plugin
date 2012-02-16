@@ -9,4 +9,12 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 ChangeLog
 ---------
-- **v0.1** - Initial version. Support for reverting a single revision in a single module.
+### v0.2
+
+- Support for reverting multiple commits.
+- Support for reverting commits in multiple modules (but still in the same repository).
+- Not reverting if files are out of date.
+
+### v0.1
+
+- Initial version. Support for single modules.
