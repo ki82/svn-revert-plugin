@@ -9,6 +9,10 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 ChangeLog
 ---------
+### v0.3
+
+- Integration with Claim Plugin, making non-sticky claims when bad commits have been reverted.
+
 ### v0.2
 
 - Support for reverting multiple commits.
