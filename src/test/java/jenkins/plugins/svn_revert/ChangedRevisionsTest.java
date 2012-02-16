@@ -33,7 +33,7 @@ public class ChangedRevisionsTest extends AbstractMockitoTestCase {
 
         final Revisions revisions = new ChangedRevisions().getFor(build);
 
-        assertThat(revisions, is(Revisions.create(3, 9)));
+        assertThat(revisions, is(Revisions.create(3, 7, 9)));
     }
 
     private void givenChangedRevision(final int revision) {
