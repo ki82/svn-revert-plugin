@@ -3,6 +3,8 @@ package jenkins.plugins.svn_revert;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.collect.Lists;
 
 final class Revisions {
@@ -38,6 +40,9 @@ final class Revisions {
         return listOfRevisions;
     }
 
+    String getAllInOrderAsString() {
+        return StringUtils.join(getAllInOrder(), ", ");
+    }
 
     @Override
     public boolean equals(final Object obj) {
@@ -63,7 +68,7 @@ final class Revisions {
 
     @Override
     public String toString() {
-        return "Revisions, first="+ getFirst() +", last="+ getLast();
+        return "Revisions, <" + getAllInOrderAsString() + ">";
     }
 
 }

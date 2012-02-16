@@ -3,8 +3,6 @@ package jenkins.plugins.svn_revert;
 import hudson.model.AbstractBuild;
 import hudson.plugins.claim.ClaimBuildAction;
 
-import org.apache.commons.lang.StringUtils;
-
 class Claimer {
 
     static final String CLAIMED_BY = "Jenkins Revert Plugin";
@@ -22,8 +20,7 @@ class Claimer {
     }
 
     private String getClaimMessage(final AbstractBuild<?, ?> build) {
-        String revisions = StringUtils.join(changedRevisions.getFor(build).getAllInOrder(), ", ");
-        return "Reverted revisions " + revisions;
+        return "Reverted revisions " + changedRevisions.getFor(build).getAllInOrderAsString();
     }
 
 }
