@@ -4,9 +4,12 @@ import hudson.Launcher;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
+import hudson.plugins.claim.ClaimBuildAction;
 import hudson.scm.SubversionSCM;
 
 class Bouncer {
+
+    static final String CLAIMED_BY = "Jenkins Revert Plugin";
 
     static boolean throwOutIfUnstable(final AbstractBuild<?, ?> build, final Launcher launcher,
             final Messenger messenger, final SvnReverter svnReverter) {
@@ -28,7 +31,18 @@ class Bouncer {
             return true;
         }
 
-        return svnReverter.revert(getSubversionScm(build));
+        if (svnReverter.revert(getSubversionScm(build))) {
+            claim(build);
+            return true;
+        }
+        return false;
+    }
+
+    private static void claim(final AbstractBuild<?, ?> build) {
+        final ClaimBuildAction c = build.getAction(ClaimBuildAction.class);
+        if (c != null) {
+            c.claim(CLAIMED_BY, "Reverted", false);
+        }
     }
 
     private static boolean noChangesIn(final AbstractBuild<?, ?> build) {

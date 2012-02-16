@@ -11,6 +11,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.plugins.claim.ClaimBuildAction;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.NullSCM;
 import hudson.scm.SubversionSCM;
@@ -55,6 +56,8 @@ public class BouncerTest extends AbstractMockitoTestCase {
     private AbstractProject rootProject;
     @Mock
     private NullSCM nullScm;
+    @Mock
+    private ClaimBuildAction claimBuildAction;
 
     private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
     private EntryImpl entry;
@@ -68,6 +71,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
         when(listener.getLogger()).thenReturn(logger);
         when(build.getPreviousBuiltBuild()).thenReturn(previousBuild);
         when(rootProject.getScm()).thenReturn(subversionScm);
+        when(build.getAction(ClaimBuildAction.class)).thenReturn(claimBuildAction);
         givenMayRevert();
     }
 
@@ -169,7 +173,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldFailBuildIfRevertFails() throws Exception {
+    public void shouldFailBuildWhenRevertFails() throws Exception {
         when(reverter.revert(subversionScm)).thenReturn(false);
 
         assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(false));
@@ -183,10 +187,27 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldNotFailBuildIfRevertSucceeds() throws Exception {
+    public void shouldNotFailBuildWhenRevertSucceeds() throws Exception {
         when(reverter.revert(subversionScm)).thenReturn(true);
 
         assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(true));
+    }
+
+    @Test
+    public void shouldNotFailWhenClaimPluginNotAvailable() throws Exception {
+        when(reverter.revert(subversionScm)).thenReturn(true);
+        when(build.getAction(ClaimBuildAction.class)).thenReturn(null);
+
+        assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(true));
+    }
+
+    @Test
+    public void shouldClaimWhenRevertSucceds() throws Exception {
+        when(reverter.revert(subversionScm)).thenReturn(true);
+
+        assertThat(Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter), is(true));
+
+        verify(claimBuildAction).claim(Bouncer.CLAIMED_BY, "Reverted", false);
     }
 
     private void givenNotSubversionScm() {

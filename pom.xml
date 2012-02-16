@@ -183,6 +183,11 @@
       <version>1.2.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.plugins</groupId>
+      <artifactId>claim</artifactId>
+      <version>1.7</version>
+    </dependency>
   </dependencies>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
