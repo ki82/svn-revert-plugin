@@ -12,7 +12,6 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.plugins.claim.ClaimBuildAction;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.NullSCM;
 import hudson.scm.SubversionSCM;
@@ -59,8 +58,6 @@ public class BouncerTest extends AbstractMockitoTestCase {
     private AbstractProject rootProject;
     @Mock
     private NullSCM nullScm;
-    @Mock
-    private ClaimBuildAction claimBuildAction;
 
     private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
     private EntryImpl entry;
