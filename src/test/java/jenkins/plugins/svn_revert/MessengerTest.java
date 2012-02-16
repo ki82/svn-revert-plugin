@@ -58,6 +58,12 @@ public class MessengerTest extends AbstractMockitoTestCase {
     }
 
     @Test
+    public void logsWhenFilesOutOfDate() throws Exception {
+        messenger.informFilesToRevertOutOfDate();
+        verify(logger).println(Messenger.FILES_TO_REVERT_OUT_OF_DATE);
+    }
+
+    @Test
     public void printsStackTrace() throws Exception {
         messenger.printStackTraceFor(exception);
         verify(exception).printStackTrace(logger);
