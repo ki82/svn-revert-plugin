@@ -12,6 +12,7 @@ ChangeLog
 ### v0.3
 
 - Integration with Claim Plugin, making non-sticky claims when bad commits have been reverted.
+- Removed ability to configure commit message when reverting.
 
 ### v0.2
 
