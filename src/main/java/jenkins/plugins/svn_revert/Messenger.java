@@ -60,5 +60,4 @@ class Messenger {
         logger.println(string);
     }
 
-
 }
