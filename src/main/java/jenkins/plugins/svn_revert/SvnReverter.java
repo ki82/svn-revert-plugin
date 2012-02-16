@@ -17,25 +17,24 @@ import com.google.common.collect.Lists;
 
 class SvnReverter {
 
+    static final String REVERT_MESSAGE =
+            "Automatically reverted revision(s) %s since Jenkins build became UNSTABLE.";
     private final Messenger messenger;
     private final AbstractBuild<?, ?> build;
     private final BuildListener listener;
     private SvnKitClient svnKitClient;
     private final SvnKitClientFactory svnFactory;
     private final ModuleResolver moduleResolver;
-    private final String revertMessage;
     private final ChangedRevisions changedRevisions;
 
     SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
             final Messenger messenger, final SvnKitClientFactory svnFactory,
-            final ModuleResolver moduleResolver, final String revertMessage,
-            final ChangedRevisions changedRevisions) {
+            final ModuleResolver moduleResolver, final ChangedRevisions changedRevisions) {
         this.build = build;
         this.listener = listener;
         this.messenger = messenger;
         this.svnFactory = svnFactory;
         this.moduleResolver = moduleResolver;
-        this.revertMessage = revertMessage;
         this.changedRevisions = changedRevisions;
     }
 
@@ -74,14 +73,17 @@ class SvnReverter {
             moduleDirs.add(moduleDir);
         }
 
-        if (svnKitClient.commit(revertMessage, moduleDirs.toArray(new File[0]))) {
+        if (svnKitClient.commit(getRevertMessageFor(revisions), moduleDirs.toArray(new File[0]))) {
             informReverted(revisions, moduleLocations);
         } else {
             messenger.informFilesToRevertOutOfDate();
         }
 
-
         return true;
+    }
+
+    private String getRevertMessageFor(final Revisions revisions) {
+        return String.format(REVERT_MESSAGE, revisions.getAllInOrderAsString());
     }
 
     private void informReverted(final Revisions revisions, final List<ModuleLocation> moduleLocations) {

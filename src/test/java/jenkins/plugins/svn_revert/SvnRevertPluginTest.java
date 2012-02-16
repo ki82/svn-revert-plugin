@@ -158,14 +158,14 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     private void givenJobWithNullScm() throws Exception {
         job = createFreeStyleProject("no-scm-job");
-        job.getPublishersList().add(new JenkinsGlue(""));
+        job.getPublishersList().add(new JenkinsGlue());
         job.setAssignedLabel(hudson.getSelfLabel());
         job.setScm(new NullSCM());
     }
 
     private void givenJobWithSubversionScm() throws Exception {
         job = createFreeStyleProject("subversion-scm-job");
-        job.getPublishersList().add(new JenkinsGlue(""));
+        job.getPublishersList().add(new JenkinsGlue());
         job.setAssignedLabel(hudson.getSelfLabel());
         job.setScm(scm);
     }

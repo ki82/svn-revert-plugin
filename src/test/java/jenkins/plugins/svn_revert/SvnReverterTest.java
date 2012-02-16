@@ -91,7 +91,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(subversionScm.getLocations(environmentVariables, build)).thenAnswer(getModuleLocationAnswer());
         when(svnKitClient.commit(anyString(), any(File.class))).thenReturn(true);
         when(svnKitClient.commit(anyString(), any(File.class), any(File.class))).thenReturn(true);
-        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, revertMessage, changedRevisions);
+        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, changedRevisions);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(svnKitClient).commit(revertMessage, moduleDir);
+        verify(svnKitClient).commit(buildCommitMessage(), moduleDir);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO_2);
         verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl, moduleDir);
         verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl2, moduleDir2);
-        verify(svnKitClient).commit(revertMessage, moduleDir, moduleDir2);
+        verify(svnKitClient).commit(buildCommitMessage(), moduleDir, moduleDir2);
         verifyNoMoreInteractions(svnKitClient);
     }
 
@@ -236,6 +236,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private void givenScmWithNoAuth() throws Exception {
         when(svnFactory.create(Matchers.<AbstractProject>any(), Matchers.<SubversionSCM>any()))
         .thenThrow(new NoSvnAuthException());
+    }
+
+    private String buildCommitMessage() {
+        return String.format(SvnReverter.REVERT_MESSAGE, Revisions.create(FIRST_CHANGE).getAllInOrderAsString());
     }
 
     private Answer<ModuleLocation[]> getModuleLocationAnswer() {

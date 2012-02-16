@@ -16,20 +16,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class JenkinsGlue extends Notifier {
 
-    private final String revertMessage;
-
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.BUILD;
     }
 
-    public String getRevertMessage() {
-        return revertMessage;
-    }
-
     @DataBoundConstructor
-    public JenkinsGlue(final String revertMessage) {
-        this.revertMessage = revertMessage;
+    public JenkinsGlue() {
     }
 
     @Override
@@ -44,8 +37,7 @@ public class JenkinsGlue extends Notifier {
         final Messenger messenger = new Messenger(listener.getLogger());
         final ChangedRevisions changedRevisions = new ChangedRevisions();
         final SvnReverter svnReverter = new SvnReverter(abstractBuild, listener, messenger,
-                new SvnKitClientFactory(), new ModuleResolver(), revertMessage,
-                changedRevisions);
+                new SvnKitClientFactory(), new ModuleResolver(), changedRevisions);
         return Bouncer.throwOutIfUnstable(abstractBuild, launcher, messenger, svnReverter,
                 new Claimer(changedRevisions));
     }
@@ -61,10 +53,6 @@ public class JenkinsGlue extends Notifier {
         @Override
         public String getDisplayName() {
             return "Revert commits that breaks the build";
-        }
-
-        public String getRevertMessage() {
-            return "Revert message 2";
         }
 
     }
