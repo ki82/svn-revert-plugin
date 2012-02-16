@@ -7,13 +7,9 @@ import com.google.common.collect.Lists;
 
 final class Revisions {
 
-    private final int last;
-    private final int first;
     private final List<Integer> listOfRevisions;
 
-    private Revisions(final int first, final int last, final List<Integer> listOfRevisions) {
-        this.last = last;
-        this.first = first;
+    private Revisions(final List<Integer> listOfRevisions) {
         this.listOfRevisions = listOfRevisions;
     }
 
@@ -23,26 +19,25 @@ final class Revisions {
 
     static Revisions create(final List<Integer> listOfRevisions) {
         Collections.sort(listOfRevisions);
-        return new Revisions(
-                listOfRevisions.get(0),
-                listOfRevisions.get(listOfRevisions.size() - 1), listOfRevisions);
+        return new Revisions(listOfRevisions);
     }
 
     int getLast() {
-        return last;
+        return listOfRevisions.get(listOfRevisions.size() - 1);
     }
 
     int getFirst() {
-        return first;
+        return listOfRevisions.get(0);
     }
 
     int getBefore() {
-        return first - 1;
+        return getFirst() - 1;
     }
 
     List<Integer> getAllInOrder() {
         return listOfRevisions;
     }
+
 
     @Override
     public boolean equals(final Object obj) {
@@ -56,10 +51,11 @@ final class Revisions {
             return false;
         }
         final Revisions other = (Revisions) obj;
-        if (first != other.first) {
-            return false;
-        }
-        if (last != other.last) {
+        if (listOfRevisions == null) {
+            if (other.listOfRevisions != null) {
+                return false;
+            }
+        } else if (!listOfRevisions.equals(other.listOfRevisions)) {
             return false;
         }
         return true;
@@ -67,7 +63,7 @@ final class Revisions {
 
     @Override
     public String toString() {
-        return "Revisions, first="+first+", last="+last;
+        return "Revisions, first="+ getFirst() +", last="+ getLast();
     }
 
 }
