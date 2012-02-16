@@ -3,41 +3,45 @@ package jenkins.plugins.svn_revert;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 final class Revisions {
 
     private final int last;
     private final int first;
+    private final List<Integer> listOfRevisions;
 
-    private Revisions(final int first, final int last) {
+    private Revisions(final int first, final int last, final List<Integer> listOfRevisions) {
         this.last = last;
         this.first = first;
+        this.listOfRevisions = listOfRevisions;
     }
 
-    static Revisions create(final int revision) {
-        return new Revisions(revision, revision);
-    }
-
-    static Revisions create(final int first, final int last) {
-        return new Revisions(first, last);
+    static Revisions create(final Integer... revisions) {
+        return create(Lists.newArrayList(revisions));
     }
 
     static Revisions create(final List<Integer> listOfRevisions) {
         Collections.sort(listOfRevisions);
         return new Revisions(
                 listOfRevisions.get(0),
-                listOfRevisions.get(listOfRevisions.size() - 1));
+                listOfRevisions.get(listOfRevisions.size() - 1), listOfRevisions);
     }
 
-    public int getLast() {
+    int getLast() {
         return last;
     }
 
-    public int getFirst() {
+    int getFirst() {
         return first;
     }
 
-    public int getBefore() {
+    int getBefore() {
         return first - 1;
+    }
+
+    List<Integer> getAllInOrder() {
+        return listOfRevisions;
     }
 
     @Override
@@ -65,6 +69,5 @@ final class Revisions {
     public String toString() {
         return "Revisions, first="+first+", last="+last;
     }
-
 
 }

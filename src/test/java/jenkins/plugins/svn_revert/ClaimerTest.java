@@ -13,15 +13,18 @@ import org.mockito.Mock;
 public class ClaimerTest extends AbstractMockitoTestCase {
 
     private Claimer claimer;
+
     @Mock
     private AbstractBuild<?, ?> build;
     @Mock
     private ClaimBuildAction claimBuildAction;
+    @Mock
+    private ChangedRevisions changedRevisions;
 
     @Before
     public void setup() throws Exception {
         when(build.getAction(ClaimBuildAction.class)).thenReturn(claimBuildAction);
-        claimer = new Claimer();
+        claimer = new Claimer(changedRevisions);
     }
 
     @Test
@@ -33,9 +36,10 @@ public class ClaimerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldClaimWhenRevertSucceds() throws Exception {
+        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(3, 4, 7));
         claimer.claim(build);
 
-        verify(claimBuildAction).claim(Claimer.CLAIMED_BY, "Reverted", false);
+        verify(claimBuildAction).claim(Claimer.CLAIMED_BY, "Reverted revisions 3, 4, 7", false);
     }
 
 
