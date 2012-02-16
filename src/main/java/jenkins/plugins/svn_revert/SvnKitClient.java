@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import org.tmatesoft.svn.core.SVNDepth;
+import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -33,10 +34,19 @@ class SvnKitClient {
     }
 
     @SuppressWarnings("deprecation")
-    void commit(final String revertMessage, final File... moduleDirectories) throws SVNException, IOException {
+    boolean commit(final String revertMessage, final File... moduleDirectories) throws IOException, SVNException {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
-        commitClient.doCommit(getCanonicalFiles(moduleDirectories), true, revertMessage, false,
-                true);
+        try {
+            commitClient.doCommit(getCanonicalFiles(moduleDirectories), true, revertMessage, false,
+                    true);
+        } catch (final SVNException e) {
+            if (e.getErrorMessage().getErrorCode() == SVNErrorCode.FS_TXN_OUT_OF_DATE) {
+                return false;
+            }
+            System.out.println(e.getErrorMessage().getErrorCode());
+            throw e;
+        }
+        return true;
     }
 
     private File[] getCanonicalFiles(final File... moduleDirectories) throws IOException {

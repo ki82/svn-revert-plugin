@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -60,13 +61,13 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     public void testShouldNotRevertWhenBuildStatusIsSuccess() throws Exception {
         givenJobWithSubversionScm();
-        givenChangesInSubversion(MODIFIED_FILE);
+        givenChangesInSubversionIn(MODIFIED_FILE);
 
         currentBuild = scheduleBuild();
 
         assertThat(logFor(currentBuild), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
         assertBuildStatus(SUCCESS, currentBuild);
-        assertNothingReverted();
+        assertNothingRevertedSince(ONE_COMMIT);
     }
 
     public void testShouldLogAndRevertWhenBuildStatusChangesToUnstable() throws Exception {
@@ -84,7 +85,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     public void testCanRevertMultipleModulesInSameRepository() throws Exception {
         givenJobWithTwoModulesInSameRepository();
         givenPreviousBuildSuccessful();
-        givenChangesInSubversion(MODIFIED_FILE_IN_MODULE_1);
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
 
         currentBuild = scheduleBuild();
@@ -107,13 +108,27 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertFileReverted(MODIFIED_FILE);
     }
 
+    public void testWillNotRevertIfFileHasChangedSinceBuildStarted() throws Exception {
+        givenJobWithSubversionScm();
+        givenPreviousBuildSuccessful();
+        givenChangesInSubversionIn(MODIFIED_FILE);
+        givenNextBuildWillBe(UNSTABLE);
+
+        final Future<FreeStyleBuild> future = job.scheduleBuild2(1);
+        givenChangesInSubversionIn(MODIFIED_FILE);
+        currentBuild = future.get();
+
+        assertNothingRevertedSince(TWO_COMMITS);
+        assertBuildStatus(UNSTABLE, currentBuild);
+    }
+
     private void givenSubversionScmWithOneModule() throws Exception {
         final File repo = getRepoWithTwoModules();
         svnUrl = "file://" + repo.getPath() + "/module1";
         scm = new SubversionSCM(svnUrl);
     }
 
-    private void givenChangesInSubversion(final String file) throws Exception {
+    private void givenChangesInSubversionIn(final String file) throws Exception {
         modifyAndCommit(file);
     }
 
@@ -157,7 +172,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private FreeStyleBuild whenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
             InterruptedException, ExecutionException {
         givenPreviousBuildSuccessful();
-        givenChangesInSubversion(MODIFIED_FILE);
+        givenChangesInSubversionIn(MODIFIED_FILE);
         givenNextBuildWillBe(UNSTABLE);
         return scheduleBuild();
     }
@@ -171,8 +186,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return scheduleBuild();
     }
 
-    private void assertNothingReverted() throws Exception, IOException, InterruptedException {
-        assertEquals(ONE_COMMIT, getRevisionAfterCurrentBuild());
+    private void assertNothingRevertedSince(final String revisionNumber) throws Exception, IOException, InterruptedException {
+        assertEquals(revisionNumber, getRevisionAfterCurrentBuild());
     }
 
     private void assertFileReverted(final String path)
