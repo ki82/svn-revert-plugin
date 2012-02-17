@@ -9,6 +9,10 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 ChangeLog
 ---------
+### v0.4
+
+- Support for e-mailing to committers when reverting.
+
 ### v0.3
 
 - Integration with Claim Plugin, making non-sticky claims when bad commits have been reverted.
