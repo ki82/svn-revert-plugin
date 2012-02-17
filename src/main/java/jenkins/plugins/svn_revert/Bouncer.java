@@ -9,7 +9,8 @@ import hudson.scm.SubversionSCM;
 class Bouncer {
 
     static boolean throwOutIfUnstable(final AbstractBuild<?, ?> build, final Launcher launcher,
-            final Messenger messenger, final SvnReverter svnReverter, final Claimer claimer) {
+            final Messenger messenger, final SvnReverter svnReverter, final Claimer claimer,
+            final RevertMailSender mailer) throws InterruptedException {
 
         if (isNotSubversionJob(build)) {
             messenger.informNotSubversionSCM();
@@ -30,6 +31,7 @@ class Bouncer {
 
         if (svnReverter.revert(getSubversionScm(build))) {
             claimer.claim(build);
+            mailer.sendRevertMail(build);
             return true;
         }
         return false;

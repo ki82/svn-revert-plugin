@@ -38,8 +38,9 @@ public class JenkinsGlue extends Notifier {
         final ChangedRevisions changedRevisions = new ChangedRevisions();
         final SvnReverter svnReverter = new SvnReverter(abstractBuild, listener, messenger,
                 new SvnKitClientFactory(), new ModuleResolver(), changedRevisions);
-        return Bouncer.throwOutIfUnstable(abstractBuild, launcher, messenger, svnReverter,
-                new Claimer(changedRevisions));
+        final Claimer claimer = new Claimer(changedRevisions);
+        final RevertMailSender mailer = new RevertMailSender(new RevertMailFormatter(changedRevisions), listener);
+        return Bouncer.throwOutIfUnstable(abstractBuild, launcher, messenger, svnReverter, claimer, mailer);
     }
 
     @Extension

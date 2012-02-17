@@ -58,6 +58,8 @@ public class BouncerTest extends AbstractMockitoTestCase {
     private AbstractProject rootProject;
     @Mock
     private NullSCM nullScm;
+    @Mock
+    private RevertMailSender mailer;
 
     private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
     private EntryImpl entry;
@@ -210,8 +212,17 @@ public class BouncerTest extends AbstractMockitoTestCase {
         verifyZeroInteractions(claimer);
     }
 
-    private boolean throwOutIfUnstable() {
-        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer);
+    @Test
+    public void shouldSendMailWhenRevertSucceeds() throws Exception {
+        when(reverter.revert(subversionScm)).thenReturn(true);
+
+        throwOutIfUnstable();
+
+        verify(mailer).sendRevertMail(build);
+    }
+
+    private boolean throwOutIfUnstable() throws Exception {
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, mailer);
     }
 
     private void givenNotSubversionScm() {
