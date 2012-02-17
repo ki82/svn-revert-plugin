@@ -13,11 +13,16 @@ class RevertMailFormatter {
         this.changedRevisions = changedRevisions;
     }
 
-    public MimeMessage format(final MimeMessage mail, final AbstractBuild<?, ?> build)
+    public MimeMessage format(final MimeMessage mail, final AbstractBuild<?, ?> build,
+            final String jenkinsUrl)
             throws MessagingException {
         final String revisions = changedRevisions.getFor(build).getAllInOrderAsString();
         mail.setSubject(String.format("Reverted revision(s): %s", revisions));
-        mail.setText(String.format("Revision(s) %s was reverted since they made the build became UNSTABLE.", revisions));
+        final String jobName = build.getProject().getRootProject().getName();
+        mail.setText(String.format(
+                "Revision(s) %s was reverted since they made %s UNSTABLE.\n\n" +
+                        "See: %s",
+                revisions, jobName,  jenkinsUrl + build.getUrl()));
         return mail;
     }
 
