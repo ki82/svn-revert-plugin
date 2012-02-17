@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.junit.Ignore;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
@@ -76,11 +75,12 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
 
-        final String buildLog = logFor(currentBuild);
-        assertThat(buildLog, containsString(svnUrl));
-        assertThat(buildLog, containsString(ONE_REVERTED_REVISION));
+        final String log = logFor(currentBuild);
+
         assertBuildStatus(UNSTABLE, currentBuild);
         assertFileReverted(MODIFIED_FILE);
+        assertThat(log, containsString(svnUrl));
+        assertThat(log, containsString(ONE_REVERTED_REVISION));
     }
 
     public void testCanRevertMultipleModulesInSameRepository() throws Exception {
@@ -92,22 +92,25 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         currentBuild = scheduleBuild();
 
         final String log = logFor(currentBuild);
+
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
         assertThat(log, containsString("module1"));
         assertThat(log, containsString("module2"));
         assertThatStringContainsTimes(log, ONE_REVERTED_REVISION, 2);
-        assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
     }
 
-    @Ignore("Multi module support is broken")
     public void testCanRevertMultipleRevisions() throws Exception {
         givenJobWithSubversionScm();
 
         currentBuild = whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges();
 
         final String log = logFor(currentBuild);
+
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertFileReverted(MODIFIED_FILE);
         assertThat(log, containsString(svnUrl));
         assertThat(log, containsString(TWO_REVERTED_REVISIONS));
-        assertFileReverted(MODIFIED_FILE);
     }
 
     public void testWillNotRevertIfFileHasChangedSinceBuildStarted() throws Exception {
@@ -120,8 +123,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenChangesInSubversionIn(MODIFIED_FILE);
         currentBuild = future.get();
 
-        assertNothingRevertedSince(TWO_COMMITS);
         assertBuildStatus(UNSTABLE, currentBuild);
+        assertNothingRevertedSince(TWO_COMMITS);
         assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 0);
     }
 
