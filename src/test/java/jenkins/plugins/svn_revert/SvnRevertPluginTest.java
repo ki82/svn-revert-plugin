@@ -32,17 +32,20 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private static final long NO_COMMITS = 1;
     private static final long ONE_COMMIT = 2;
     private static final long TWO_COMMITS = 3;
+    private static final long THREE_COMMITS = 4;
     private static final String ONE_REVERTED_REVISION =
             String.format(" %s:%s ", NO_COMMITS, ONE_COMMIT);
     private static final String TWO_REVERTED_REVISIONS =
             String.format(" %s:%s ", NO_COMMITS, TWO_COMMITS);
     private static final String MODIFIED_FILE = "modified_file.txt";
+    private static final String MODIFIED_FILE_IN_MODULE_2 = "module2" + File.separator + MODIFIED_FILE;
     private static final String MODIFIED_FILE_IN_MODULE_1 =
             "module1" + File.separator + MODIFIED_FILE;
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
     private String svnUrl;
     private SubversionSCM scm;
+    private SubversionSCM rootScm;
     private FreeStyleBuild currentBuild;
 
     @Override
@@ -120,19 +123,40 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenChangesInSubversionIn(MODIFIED_FILE);
         givenNextBuildWillBe(UNSTABLE);
 
-        final Future<FreeStyleBuild> future = job.scheduleBuild2(1);
-        givenChangesInSubversionIn(MODIFIED_FILE);
-        currentBuild = future.get();
+        currentBuild = whenFileChangedDuringBuilding(MODIFIED_FILE);
 
         assertBuildStatus(UNSTABLE, currentBuild);
         assertNothingRevertedSince(TWO_COMMITS);
         assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 0);
     }
 
+    public void testShouldNotRevertAnythingWhenLastFileToCommitHasChanged() throws Exception {
+        givenJobWithTwoModulesInSameRepository();
+        givenPreviousBuildSuccessful();
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_2);
+        givenNextBuildWillBe(UNSTABLE);
+
+        currentBuild = whenFileChangedDuringBuilding(MODIFIED_FILE_IN_MODULE_1);
+
+        assertNothingRevertedSince(THREE_COMMITS);
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertThatStringContainsTimes(logFor(currentBuild), TWO_REVERTED_REVISIONS, 0);
+    }
+
+    private FreeStyleBuild whenFileChangedDuringBuilding(final String file) throws Exception, InterruptedException,
+            ExecutionException {
+        final Future<FreeStyleBuild> future = job.scheduleBuild2(1);
+        givenChangesInSubversionIn(file);
+        return future.get();
+    }
+
     private void givenSubversionScmWithOneModule() throws Exception {
         final File repo = getRepoWithTwoModules();
-        svnUrl = "file://" + repo.getPath() + "/module1";
+        final String repoUrl = "file://" + repo.getPath();
+        svnUrl = repoUrl + "/module1";
         scm = new SubversionSCM(svnUrl);
+        rootScm = new SubversionSCM(repoUrl);
     }
 
     private void givenChangesInSubversionIn(final String file) throws Exception {
@@ -151,6 +175,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final String[] svnUrls = new String[]{ svnUrl + "/module1", svnUrl + "/module2" };
         final String[] repoLocations= new String[]{ "module1", "module2" };
         scm = new SubversionSCM(svnUrls, repoLocations, true, null);
+        rootScm = new SubversionSCM(svnUrl);
         job.setScm(scm);
     }
 
@@ -270,7 +295,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     private long getCurrentSvnRevision() throws Exception {
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
-        final FreeStyleBuild build = getIndependentSubversionBuild(scm);
+        final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
         final File workspace = new File(build.getWorkspace().getRemote());
         final SVNStatus status = svnm.getStatusClient().doStatus(workspace, true);
         return status.getRevision().getNumber();

@@ -12,14 +12,14 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
-import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNCommitClient;
+import org.tmatesoft.svn.core.wc.SVNCommitPacket;
 
 
-@SuppressWarnings("deprecation")
 public class SvnKitClientTest extends AbstractMockitoTestCase{
 
     @Mock
@@ -30,24 +30,31 @@ public class SvnKitClientTest extends AbstractMockitoTestCase{
     private File file;
 
     private SvnKitClient svnKitClient;
+    @Mock
+    private SVNCommitInfo commitInfo;
+    private SVNCommitInfo[] commitInfos;
+    @Mock
+    private SVNErrorMessage errorMessage;
 
     @Before
     public void setup() throws Exception {
         svnKitClient = new SvnKitClient(clientManager);
         when(clientManager.getCommitClient()).thenReturn(commitClient);
+        commitInfos = new SVNCommitInfo[]{ commitInfo };
+        when(commitClient.doCommit(any(SVNCommitPacket[].class), anyBoolean(), anyString())).thenReturn(
+                commitInfos);
+        when(commitInfo.getErrorMessage()).thenReturn(errorMessage);
     }
 
     @Test
     public void shouldReturnFalseWhenFileIsOutOfDate() throws Exception {
-        when(commitClient.doCommit(any(File[].class), anyBoolean(), anyString(), anyBoolean(), anyBoolean())).thenThrow(
-                new SVNException(SVNErrorMessage.create(SVNErrorCode.FS_TXN_OUT_OF_DATE, "")));
+        when(errorMessage.getErrorCode()).thenReturn(SVNErrorCode.FS_TXN_OUT_OF_DATE);
 
         assertThat(svnKitClient.commit(null, file), is(false));
     }
 
     @Test
     public void shouldReturnTrueWhenCommitSucceds() throws Exception {
-
         assertThat(svnKitClient.commit(null, file), is(true));
     }
 }
