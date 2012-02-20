@@ -57,4 +57,5 @@ public class SvnKitClientTest extends AbstractMockitoTestCase{
     public void shouldReturnTrueWhenCommitSucceds() throws Exception {
         assertThat(svnKitClient.commit(null, file), is(true));
     }
+
 }

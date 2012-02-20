@@ -43,6 +43,10 @@ class SvnKitClient {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
         final SVNCommitPacket[] commitPackets = getCommitPackets(commitClient, moduleDirectories);
         final SVNCommitInfo[] commitInfos = commitClient.doCommit(commitPackets, true, revertMessage);
+        return commitSuccessful(commitInfos);
+    }
+
+    private boolean commitSuccessful(final SVNCommitInfo[] commitInfos) {
         for (final SVNCommitInfo commitInfo : commitInfos) {
             if (filesOutOfDate(commitInfo)) {
                 return false;
