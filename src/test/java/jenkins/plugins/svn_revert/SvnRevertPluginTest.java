@@ -133,7 +133,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 0);
     }
 
-    public void testShouldNotRevertAnythingWhenLastFileToCommitHasChanged() throws Exception {
+    public void testShouldNotRevertAnythingWhenFileToRevertHasChanged() throws Exception {
         givenJobWithTwoModulesInSameRepository();
         givenPreviousBuildSuccessful();
         givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
