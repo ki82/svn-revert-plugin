@@ -37,10 +37,13 @@ public class SvnRevertPluginTest extends HudsonTestCase {
             String.format(" %s:%s ", NO_COMMITS, ONE_COMMIT);
     private static final String TWO_REVERTED_REVISIONS =
             String.format(" %s:%s ", NO_COMMITS, TWO_COMMITS);
+    private static final String MODULE_1 = "module1";
+    private static final String MODULE_2 = "module2";
     private static final String MODIFIED_FILE = "modified_file.txt";
-    private static final String MODIFIED_FILE_IN_MODULE_2 = "module2" + File.separator + MODIFIED_FILE;
     private static final String MODIFIED_FILE_IN_MODULE_1 =
-            "module1" + File.separator + MODIFIED_FILE;
+            MODULE_1 + File.separator + MODIFIED_FILE;
+    private static final String MODIFIED_FILE_IN_MODULE_2 =
+            MODULE_2 + File.separator + MODIFIED_FILE;
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
     private String svnUrl;
@@ -99,8 +102,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
         assertBuildStatus(UNSTABLE, currentBuild);
         assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
-        assertThat(log, containsString("module1"));
-        assertThat(log, containsString("module2"));
+        assertThat(log, containsString(MODULE_1));
+        assertThat(log, containsString(MODULE_2));
         assertThatStringContainsTimes(log, ONE_REVERTED_REVISION, 2);
     }
 
@@ -154,7 +157,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private void givenSubversionScmWithOneModule() throws Exception {
         final File repo = getRepoWithTwoModules();
         final String repoUrl = "file://" + repo.getPath();
-        svnUrl = repoUrl + "/module1";
+        svnUrl = repoUrl + "/" + MODULE_1;
         scm = new SubversionSCM(svnUrl);
         rootScm = new SubversionSCM(repoUrl);
     }
@@ -172,8 +175,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenJobWithSubversionScm();
         final File repo = getRepoWithTwoModules();
         svnUrl = "file://" + repo.getPath();
-        final String[] svnUrls = new String[]{ svnUrl + "/module1", svnUrl + "/module2" };
-        final String[] repoLocations= new String[]{ "module1", "module2" };
+        final String[] svnUrls = new String[]{ svnUrl + "/" + MODULE_1, svnUrl + "/" + MODULE_2 };
+        final String[] repoLocations= new String[]{ MODULE_1, MODULE_2 };
         scm = new SubversionSCM(svnUrls, repoLocations, true, null);
         rootScm = new SubversionSCM(svnUrl);
         job.setScm(scm);
