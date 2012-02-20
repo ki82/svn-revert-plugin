@@ -24,13 +24,14 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNStatus;
 
 @SuppressWarnings("deprecation")
 public class SvnRevertPluginTest extends HudsonTestCase {
 
-    private static final String NO_COMMITS = "1";
-    private static final String ONE_COMMIT = "2";
-    private static final String TWO_COMMITS = "3";
+    private static final long NO_COMMITS = 1;
+    private static final long ONE_COMMIT = 2;
+    private static final long TWO_COMMITS = 3;
     private static final String ONE_REVERTED_REVISION =
             String.format(" %s:%s ", NO_COMMITS, ONE_COMMIT);
     private static final String TWO_REVERTED_REVISIONS =
@@ -192,8 +193,8 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return scheduleBuild();
     }
 
-    private void assertNothingRevertedSince(final String revisionNumber) throws Exception, IOException, InterruptedException {
-        assertEquals(revisionNumber, getRevisionAfterCurrentBuild());
+    private void assertNothingRevertedSince(final long revisionNumber) throws Exception {
+        assertEquals(revisionNumber, getCurrentSvnRevision());
     }
 
     private void assertFileReverted(final String path)
@@ -267,8 +268,12 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return build;
     }
 
-    private String getRevisionAfterCurrentBuild() throws IOException, InterruptedException, Exception {
-        return scheduleBuild().getEnvironment().get("SVN_REVISION");
+    private long getCurrentSvnRevision() throws Exception {
+        final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
+        final FreeStyleBuild build = getIndependentSubversionBuild(scm);
+        final File workspace = new File(build.getWorkspace().getRemote());
+        final SVNStatus status = svnm.getStatusClient().doStatus(workspace, true);
+        return status.getRevision().getNumber();
     }
 
 }
