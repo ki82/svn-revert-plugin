@@ -9,6 +9,10 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 ChangeLog
 ---------
+### v0.5
+
+- Fixed multi-module support, which has been broken.
+
 ### v0.4
 
 - Support for e-mailing to committers when reverting.
