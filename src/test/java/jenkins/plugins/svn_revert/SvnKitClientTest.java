@@ -41,8 +41,8 @@ public class SvnKitClientTest extends AbstractMockitoTestCase{
         svnKitClient = new SvnKitClient(clientManager);
         when(clientManager.getCommitClient()).thenReturn(commitClient);
         commitInfos = new SVNCommitInfo[]{ commitInfo };
-        when(commitClient.doCommit(any(SVNCommitPacket[].class), anyBoolean(), anyString())).thenReturn(
-                commitInfos);
+        when(commitClient.doCommit(any(SVNCommitPacket[].class), anyBoolean(), anyString()))
+            .thenReturn(commitInfos);
         when(commitInfo.getErrorMessage()).thenReturn(errorMessage);
     }
 

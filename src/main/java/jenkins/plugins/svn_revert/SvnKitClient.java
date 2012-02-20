@@ -27,31 +27,35 @@ class SvnKitClient {
         this.clientManager = clientManager;
     }
 
-    void merge(final Revisions revisions, final SVNURL svnurl,
-            final File moduleDirectory)
+    void merge(final Revisions revisions, final SVNURL svnurl, final File moduleDirectory)
     throws SVNException, IOException {
         final SVNRevisionRange range = new SVNRevisionRange(
-                SVNRevision.create(revisions.getLast()), SVNRevision.create(revisions.getBefore()));
+                SVNRevision.create(revisions.getLast()),
+                SVNRevision.create(revisions.getBefore()));
         final SVNDiffClient diffClient = clientManager.getDiffClient();
         diffClient.doMerge(svnurl, SVNRevision.create(revisions.getLast()),
                 Collections.singleton(range), moduleDirectory.getCanonicalFile(), SVNDepth.INFINITY,
                 true, false, false, false);
     }
 
-    boolean commit(final String revertMessage, final File... moduleDirectories) throws IOException, SVNException {
+    boolean commit(final String revertMessage, final File... moduleDirectories)
+    throws IOException, SVNException {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
         final SVNCommitPacket[] commitPackets = getCommitPackets(commitClient, moduleDirectories);
-        final SVNCommitInfo[] commitInfo = commitClient.doCommit(commitPackets, true, revertMessage);
-        for (final SVNCommitInfo svnCommitInfo : commitInfo) {
-            final SVNErrorMessage errorMessage = svnCommitInfo.getErrorMessage();
-            if (errorMessage != null && errorMessage.getErrorCode() == SVNErrorCode.FS_TXN_OUT_OF_DATE) {
+        final SVNCommitInfo[] commitInfos = commitClient.doCommit(commitPackets, true, revertMessage);
+        for (final SVNCommitInfo commitInfo : commitInfos) {
+            if (filesOutOfDate(commitInfo)) {
                 return false;
             }
         }
         return true;
     }
 
-    @SuppressWarnings("deprecation")
+    private boolean filesOutOfDate(final SVNCommitInfo svnCommitInfo) {
+        final SVNErrorMessage errorMessage = svnCommitInfo.getErrorMessage();
+        return errorMessage != null && errorMessage.getErrorCode() == SVNErrorCode.FS_TXN_OUT_OF_DATE;
+    }
+
     private SVNCommitPacket[] getCommitPackets(final SVNCommitClient commitClient,
             final File... moduleDirectories) throws SVNException, IOException {
         final List<File> files = new LinkedList<File>();
@@ -59,7 +63,8 @@ class SvnKitClient {
         for (final File file : moduleDirectories) {
             files.add(file.getCanonicalFile());
         }
-        return commitClient.doCollectCommitItems(files.toArray(new File[0]), true, false, true, true);
+        return commitClient.doCollectCommitItems(files.toArray(new File[0]), true, false,
+                SVNDepth.INFINITY, true, null);
     }
 
 }
