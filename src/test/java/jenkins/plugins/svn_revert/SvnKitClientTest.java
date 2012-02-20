@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
+import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNCommitClient;
 import org.tmatesoft.svn.core.wc.SVNCommitPacket;
@@ -22,19 +23,21 @@ import org.tmatesoft.svn.core.wc.SVNCommitPacket;
 
 public class SvnKitClientTest extends AbstractMockitoTestCase{
 
+    private SvnKitClient svnKitClient;
+
     @Mock
     private SVNClientManager clientManager;
     @Mock
     private SVNCommitClient commitClient;
     @Mock
     private File file;
-
-    private SvnKitClient svnKitClient;
-    @Mock
-    private SVNCommitInfo commitInfo;
-    private SVNCommitInfo[] commitInfos;
     @Mock
     private SVNErrorMessage errorMessage;
+    @Mock
+    private SVNCommitInfo commitInfo;
+
+    private SVNCommitInfo[] commitInfos;
+
 
     @Before
     public void setup() throws Exception {
@@ -43,19 +46,25 @@ public class SvnKitClientTest extends AbstractMockitoTestCase{
         commitInfos = new SVNCommitInfo[]{ commitInfo };
         when(commitClient.doCommit(any(SVNCommitPacket[].class), anyBoolean(), anyString()))
             .thenReturn(commitInfos);
-        when(commitInfo.getErrorMessage()).thenReturn(errorMessage);
-    }
-
-    @Test
-    public void shouldReturnFalseWhenFileIsOutOfDate() throws Exception {
-        when(errorMessage.getErrorCode()).thenReturn(SVNErrorCode.FS_TXN_OUT_OF_DATE);
-
-        assertThat(svnKitClient.commit(null, file), is(false));
     }
 
     @Test
     public void shouldReturnTrueWhenCommitSucceds() throws Exception {
         assertThat(svnKitClient.commit(null, file), is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseWhenFileIsOutOfDate() throws Exception {
+        when(commitInfo.getErrorMessage()).thenReturn(errorMessage);
+        when(errorMessage.getErrorCode()).thenReturn(SVNErrorCode.FS_TXN_OUT_OF_DATE);
+
+        assertThat(svnKitClient.commit(null, file), is(false));
+    }
+
+    @Test(expected=SVNException.class)
+    public void shouldThrowSvnExceptionIfErrorsOnCommit() throws Exception {
+        when(commitInfo.getErrorMessage()).thenReturn(errorMessage);
+        svnKitClient.commit(null, file);
     }
 
 }

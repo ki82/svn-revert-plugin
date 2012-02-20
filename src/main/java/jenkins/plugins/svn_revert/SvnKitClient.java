@@ -46,20 +46,6 @@ class SvnKitClient {
         return commitSuccessful(commitInfos);
     }
 
-    private boolean commitSuccessful(final SVNCommitInfo[] commitInfos) {
-        for (final SVNCommitInfo commitInfo : commitInfos) {
-            if (filesOutOfDate(commitInfo)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean filesOutOfDate(final SVNCommitInfo svnCommitInfo) {
-        final SVNErrorMessage errorMessage = svnCommitInfo.getErrorMessage();
-        return errorMessage != null && errorMessage.getErrorCode() == SVNErrorCode.FS_TXN_OUT_OF_DATE;
-    }
-
     private SVNCommitPacket[] getCommitPackets(final SVNCommitClient commitClient,
             final File... moduleDirectories) throws SVNException, IOException {
         final List<File> files = new LinkedList<File>();
@@ -69,6 +55,28 @@ class SvnKitClient {
         }
         return commitClient.doCollectCommitItems(files.toArray(new File[0]), true, false,
                 SVNDepth.INFINITY, true, null);
+    }
+
+    private boolean commitSuccessful(final SVNCommitInfo[] commitInfos) throws SVNException {
+        for (final SVNCommitInfo commitInfo : commitInfos) {
+            if (filesOutOfDate(commitInfo)) {
+                return false;
+            }
+            throwExceptionIfErrorsIn(commitInfo);
+        }
+        return true;
+    }
+
+    private boolean filesOutOfDate(final SVNCommitInfo svnCommitInfo) {
+        final SVNErrorMessage errorMessage = svnCommitInfo.getErrorMessage();
+        return errorMessage != null && errorMessage.getErrorCode() == SVNErrorCode.FS_TXN_OUT_OF_DATE;
+    }
+
+    private void throwExceptionIfErrorsIn(final SVNCommitInfo commitInfo) throws SVNException {
+        final SVNErrorMessage errorMessage = commitInfo.getErrorMessage();
+        if (errorMessage != null) {
+            throw new SVNException(errorMessage);
+        }
     }
 
 }
