@@ -26,7 +26,7 @@ import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNStatus;
 
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "rawtypes", "deprecation" })
 public class SvnRevertPluginTest extends HudsonTestCase {
 
     private static final long NO_COMMITS = 1;
@@ -266,7 +266,6 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return job.scheduleBuild2(0).get();
     }
 
-    @SuppressWarnings("rawtypes")
     private void modifyAndCommit(final String path) throws Exception {
         final FreeStyleBuild build = getIndependentSubversionBuild(scm);
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
