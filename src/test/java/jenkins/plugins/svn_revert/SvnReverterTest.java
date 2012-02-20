@@ -147,7 +147,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl, moduleDir);
+        verify(svnKitClient).reverseMerge(Revisions.create(FIRST_CHANGE), svnUrl, moduleDir);
     }
 
     @Test
@@ -158,8 +158,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO);
         verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO_2);
-        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl, moduleDir);
-        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE), svnUrl2, moduleDir2);
+        verify(svnKitClient).reverseMerge(Revisions.create(FIRST_CHANGE), svnUrl, moduleDir);
+        verify(svnKitClient).reverseMerge(Revisions.create(FIRST_CHANGE), svnUrl2, moduleDir2);
         verify(svnKitClient).commit(buildCommitMessage(), moduleDir, moduleDir2);
         verifyNoMoreInteractions(svnKitClient);
     }
@@ -181,7 +181,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(svnKitClient).merge(Revisions.create(FIRST_CHANGE, SECOND_CHANGE), svnUrl, moduleDir);
+        verify(svnKitClient).reverseMerge(Revisions.create(FIRST_CHANGE, SECOND_CHANGE), svnUrl, moduleDir);
     }
 
     @Test

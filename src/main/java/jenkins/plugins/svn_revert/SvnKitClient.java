@@ -27,7 +27,7 @@ class SvnKitClient {
         this.clientManager = clientManager;
     }
 
-    void merge(final Revisions revisions, final SVNURL svnurl, final File moduleDirectory)
+    void reverseMerge(final Revisions revisions, final SVNURL svnurl, final File moduleDirectory)
     throws SVNException, IOException {
         final SVNRevisionRange range = new SVNRevisionRange(
                 SVNRevision.create(revisions.getLast()),

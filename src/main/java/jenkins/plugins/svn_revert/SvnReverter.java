@@ -68,7 +68,7 @@ class SvnReverter {
         for (final ModuleLocation moduleLocation : moduleLocations) {
             final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
 
-            svnKitClient.merge(revisions, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
+            svnKitClient.reverseMerge(revisions, moduleResolver.getSvnUrl(moduleLocation), moduleDir);
 
             moduleDirs.add(moduleDir);
         }
