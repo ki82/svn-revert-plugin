@@ -43,7 +43,7 @@ class SvnKitClient {
         final SVNCommitClient commitClient = clientManager.getCommitClient();
         final SVNCommitPacket[] commitPackets = getCommitPackets(commitClient, moduleDirectories);
         final SVNCommitInfo[] commitInfos = commitClient.doCommit(commitPackets, true, revertMessage);
-        return commitSuccessful(commitInfos);
+        return wasCommitSuccessful(commitInfos);
     }
 
     private SVNCommitPacket[] getCommitPackets(final SVNCommitClient commitClient,
@@ -57,7 +57,7 @@ class SvnKitClient {
                 SVNDepth.INFINITY, true, null);
     }
 
-    private boolean commitSuccessful(final SVNCommitInfo[] commitInfos) throws SVNException {
+    private boolean wasCommitSuccessful(final SVNCommitInfo[] commitInfos) throws SVNException {
         for (final SVNCommitInfo commitInfo : commitInfos) {
             if (filesOutOfDate(commitInfo)) {
                 return false;
