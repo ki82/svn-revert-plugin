@@ -7,8 +7,8 @@ Known Limitations
 -----------------
 It currently only works for jobs with a **single module**, or with multiple modules from the **same repository**.
 
-ChangeLog
----------
+Change Log
+----------
 ### v0.5 (2012-02-20)
 
 - Fixed multi-module support, which has been broken.
