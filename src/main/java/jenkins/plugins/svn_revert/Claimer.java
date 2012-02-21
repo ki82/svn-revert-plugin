@@ -13,9 +13,9 @@ class Claimer {
     }
 
     void claim(final AbstractBuild<?, ?> build) {
-        final ClaimBuildAction c = build.getAction(ClaimBuildAction.class);
-        if (c != null) {
-            c.claim(CLAIMED_BY, getClaimMessage(build), false);
+        final ClaimBuildAction claimAction = build.getAction(ClaimBuildAction.class);
+        if (claimAction != null) {
+            claimAction.claim(CLAIMED_BY, getClaimMessage(build), false);
         }
     }
 
