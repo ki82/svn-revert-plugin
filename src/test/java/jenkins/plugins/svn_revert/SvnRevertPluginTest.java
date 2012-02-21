@@ -71,7 +71,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenJobWithSubversionScm();
         givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
 
-        currentBuild = scheduleBuild();
+        currentBuild = whenBuilding();
 
         assertThat(logFor(currentBuild), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
         assertBuildStatus(SUCCESS, currentBuild);
@@ -97,7 +97,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
 
-        currentBuild = scheduleBuild();
+        currentBuild = whenBuilding();
 
         final String log = logFor(currentBuild);
 
@@ -183,7 +183,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     private void givenPreviousBuildSuccessful() throws Exception {
-        assertBuildStatusSuccess(scheduleBuild());
+        assertBuildStatusSuccess(whenBuilding());
     }
 
     private void givenNextBuildWillBe(final Result result) throws Exception {
@@ -209,7 +209,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenPreviousBuildSuccessful();
         givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
-        return scheduleBuild();
+        return whenBuilding();
     }
 
     private FreeStyleBuild whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges()
@@ -217,12 +217,11 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         givenPreviousBuildSuccessful();
         givenTwoChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
-
-        return scheduleBuild();
+        return whenBuilding();
     }
 
     private void assertNothingRevertedSince(final long revisionNumber) throws Exception {
-        assertEquals(revisionNumber, getCurrentSvnRevision());
+        assertEquals("HEAD revision", revisionNumber, getHeadSvnRevision());
     }
 
     private void assertFileReverted(final String path)
@@ -265,7 +264,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         }
     }
 
-    private FreeStyleBuild scheduleBuild() throws Exception {
+    private FreeStyleBuild whenBuilding() throws Exception {
         return job.scheduleBuild2(0).get();
     }
 
@@ -299,7 +298,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return build;
     }
 
-    private long getCurrentSvnRevision() throws Exception {
+    private long getHeadSvnRevision() throws Exception {
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
         final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
         final File workspace = new File(build.getWorkspace().getRemote());
