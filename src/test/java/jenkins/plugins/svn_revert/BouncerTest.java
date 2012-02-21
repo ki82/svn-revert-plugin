@@ -71,7 +71,8 @@ public class BouncerTest extends AbstractMockitoTestCase {
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
         when(listener.getLogger()).thenReturn(logger);
-        when(build.getPreviousBuiltBuild()).thenReturn(previousBuild);
+        when(build.getPreviousBuild()).thenReturn(previousBuild);
+        when(previousBuild.isBuilding()).thenReturn(false);
         when(rootProject.getScm()).thenReturn(subversionScm);
         givenMayRevert();
     }
@@ -86,6 +87,15 @@ public class BouncerTest extends AbstractMockitoTestCase {
     @Test
     public void shouldNotRevertIfPreviousBuildWasNotSuccess() throws Exception {
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
+
+        throwOutIfUnstable();
+
+        verifyNotReverted();
+    }
+
+    @Test
+    public void shouldNotRevertIfPreviousBuildIsBuilding() throws Exception {
+        when(previousBuild.isBuilding()).thenReturn(true);
 
         throwOutIfUnstable();
 
@@ -182,7 +192,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldNotFailWhenFirstBuildIsUnstable() throws Exception {
-        when(build.getPreviousBuiltBuild()).thenReturn(null);
+        when(build.getPreviousBuild()).thenReturn(null);
 
         assertThat(throwOutIfUnstable(), is(true));
     }

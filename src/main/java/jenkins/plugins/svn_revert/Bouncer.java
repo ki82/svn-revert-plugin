@@ -66,9 +66,12 @@ class Bouncer {
     }
 
     private static boolean previousBuildSuccessful(final AbstractBuild<?, ?> abstractBuild) {
-        final Run<?, ?> previousBuiltBuild = abstractBuild.getPreviousBuiltBuild();
-        if (previousBuiltBuild != null) {
-            return previousBuiltBuild.getResult() == Result.SUCCESS;
+        final Run<?, ?> previousBuild = abstractBuild.getPreviousBuild();
+        if (previousBuild != null) {
+            if (previousBuild.isBuilding()) {
+                return false;
+            }
+            return previousBuild.getResult() == Result.SUCCESS;
         }
         return false;
     }
