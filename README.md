@@ -25,7 +25,7 @@ ChangeLog
 ### v0.2
 
 - Support for reverting multiple commits.
-- Support for reverting commits in multiple modules (but still in the same repository).
+- ~~Support for reverting commits in multiple modules (but still in the same repository).~~
 - Not reverting if files are out of date.
 
 ### v0.1
