@@ -12,6 +12,20 @@ class Bouncer {
             final Messenger messenger, final SvnReverter svnReverter, final Claimer claimer,
             final RevertMailSender mailer) throws InterruptedException {
 
+        if (preconditionsNotMet(build, messenger)) {
+            return true;
+        }
+
+        if (svnReverter.revert(getSubversionScm(build))) {
+            claimer.claim(build);
+            mailer.sendRevertMail(build);
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean preconditionsNotMet(final AbstractBuild<?, ?> build,
+            final Messenger messenger) {
         if (isNotSubversionJob(build)) {
             messenger.informNotSubversionSCM();
             return true;
@@ -26,12 +40,6 @@ class Bouncer {
         }
         if (noChangesIn(build)) {
             messenger.informNoChanges();
-            return true;
-        }
-
-        if (svnReverter.revert(getSubversionScm(build))) {
-            claimer.claim(build);
-            mailer.sendRevertMail(build);
             return true;
         }
         return false;
