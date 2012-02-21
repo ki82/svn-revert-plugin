@@ -26,13 +26,14 @@ import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNStatus;
 
+import com.google.common.collect.Lists;
+
 @SuppressWarnings({ "rawtypes", "deprecation" })
 public class SvnRevertPluginTest extends HudsonTestCase {
 
     private static final long NO_COMMITS = 1;
     private static final long ONE_COMMIT = 2;
     private static final long TWO_COMMITS = 3;
-    private static final long THREE_COMMITS = 4;
     private static final String ONE_REVERTED_REVISION =
             String.format(" %s:%s ", NO_COMMITS, ONE_COMMIT);
     private static final String TWO_REVERTED_REVISIONS =
@@ -68,7 +69,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
 
     public void testShouldNotRevertWhenBuildStatusIsSuccess() throws Exception {
         givenJobWithSubversionScm();
-        givenChangesInSubversionIn(MODIFIED_FILE);
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
 
         currentBuild = scheduleBuild();
 
@@ -85,7 +86,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final String log = logFor(currentBuild);
 
         assertBuildStatus(UNSTABLE, currentBuild);
-        assertFileReverted(MODIFIED_FILE);
+        assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
         assertThat(log, containsString(svnUrl));
         assertThat(log, containsString(ONE_REVERTED_REVISION));
     }
@@ -115,7 +116,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         final String log = logFor(currentBuild);
 
         assertBuildStatus(UNSTABLE, currentBuild);
-        assertFileReverted(MODIFIED_FILE);
+        assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
         assertThat(log, containsString(svnUrl));
         assertThat(log, containsString(TWO_REVERTED_REVISIONS));
     }
@@ -123,10 +124,10 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     public void testWillNotRevertIfFileHasChangedSinceBuildStarted() throws Exception {
         givenJobWithSubversionScm();
         givenPreviousBuildSuccessful();
-        givenChangesInSubversionIn(MODIFIED_FILE);
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
 
-        currentBuild = whenFileChangedDuringBuilding(MODIFIED_FILE);
+        currentBuild = whenFileChangedDuringBuilding(MODIFIED_FILE_IN_MODULE_1);
 
         assertBuildStatus(UNSTABLE, currentBuild);
         assertNothingRevertedSince(TWO_COMMITS);
@@ -136,13 +137,12 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     public void testShouldNotRevertAnythingWhenFileToRevertHasChanged() throws Exception {
         givenJobWithTwoModulesInSameRepository();
         givenPreviousBuildSuccessful();
-        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
-        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_2);
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1, MODIFIED_FILE_IN_MODULE_2);
         givenNextBuildWillBe(UNSTABLE);
 
         currentBuild = whenFileChangedDuringBuilding(MODIFIED_FILE_IN_MODULE_1);
 
-        assertNothingRevertedSince(THREE_COMMITS);
+        assertNothingRevertedSince(TWO_COMMITS);
         assertBuildStatus(UNSTABLE, currentBuild);
         assertThatStringContainsTimes(logFor(currentBuild), TWO_REVERTED_REVISIONS, 0);
     }
@@ -162,7 +162,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         rootScm = new SubversionSCM(repoUrl);
     }
 
-    private void givenChangesInSubversionIn(final String file) throws Exception {
+    private void givenChangesInSubversionIn(final String... file) throws Exception {
         modifyAndCommit(file);
     }
 
@@ -207,7 +207,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private FreeStyleBuild whenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
             InterruptedException, ExecutionException {
         givenPreviousBuildSuccessful();
-        givenChangesInSubversionIn(MODIFIED_FILE);
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
         return scheduleBuild();
     }
@@ -215,7 +215,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private FreeStyleBuild whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges()
             throws Exception {
         givenPreviousBuildSuccessful();
-        givenTwoChangesInSubversionIn(MODIFIED_FILE);
+        givenTwoChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
 
         return scheduleBuild();
@@ -228,7 +228,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     private void assertFileReverted(final String path)
             throws IOException, InterruptedException, ExecutionException, Exception {
 
-        final FreeStyleBuild build = getIndependentSubversionBuild(scm);
+        final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
         final FilePath file = build.getWorkspace().child(path);
         assertFalse("File '" + path + "' is not reverted (because it exists)", file.exists());
     }
@@ -269,20 +269,24 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         return job.scheduleBuild2(0).get();
     }
 
-    private void modifyAndCommit(final String path) throws Exception {
-        final FreeStyleBuild build = getIndependentSubversionBuild(scm);
+    private void modifyAndCommit(final String... paths) throws Exception {
+        final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
 
-        final FilePath file = build.getWorkspace().child(path);
-        if (!file.exists()) {
-            file.touch(System.currentTimeMillis());
-            svnm.getWCClient().doAdd(new File(file.getRemote()), false, false, false,
-                    SVNDepth.INFINITY, false, false);
-        } else {
-            file.write("random content", "UTF-8");
+        final List<File> filesToCommit = Lists.newArrayList();
+        for (final String path : paths) {
+            final FilePath file = build.getWorkspace().child(path);
+            if (!file.exists()) {
+                file.touch(System.currentTimeMillis());
+                svnm.getWCClient().doAdd(new File(file.getRemote()), false, false, false,
+                        SVNDepth.INFINITY, false, false);
+            } else {
+                file.write("random content", "UTF-8");
+            }
+            filesToCommit.add(new File(file.getRemote()));
         }
 
-        svnm.getCommitClient().doCommit(new File[] { new File(file.getRemote()) }, false,
+        svnm.getCommitClient().doCommit(filesToCommit.toArray(new File[0]), false,
                 "test changes", null, null, false, false, SVNDepth.EMPTY);
     }
 
