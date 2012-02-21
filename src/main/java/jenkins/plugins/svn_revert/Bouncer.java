@@ -45,10 +45,6 @@ class Bouncer {
         return false;
     }
 
-    private static boolean noChangesIn(final AbstractBuild<?, ?> build) {
-        return build.getChangeSet().isEmptySet();
-    }
-
     private static SubversionSCM getSubversionScm(final AbstractBuild<?, ?> abstractBuild) {
         return SubversionSCM.class.cast(abstractBuild.getProject().getRootProject().getScm());
     }
@@ -63,6 +59,10 @@ class Bouncer {
 
     private static boolean previousBuildNotSuccessful(final AbstractBuild<?, ?> abstractBuild) {
         return !previousBuildSuccessful(abstractBuild);
+    }
+
+    private static boolean noChangesIn(final AbstractBuild<?, ?> build) {
+        return build.getChangeSet().isEmptySet();
     }
 
     private static boolean previousBuildSuccessful(final AbstractBuild<?, ?> abstractBuild) {
