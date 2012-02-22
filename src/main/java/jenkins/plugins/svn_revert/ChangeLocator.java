@@ -30,7 +30,6 @@ class ChangeLocator {
                 modulePaths.add(module.getRepositoryPath(build));
             }
         } catch (final SVNException e) {
-            e.printStackTrace();
             return true;
         }
         for (final String filePath : changedFiles.getRepositoryPathsFor(build)) {
