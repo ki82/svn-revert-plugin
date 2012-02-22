@@ -1,6 +1,5 @@
 package jenkins.plugins.svn_revert;
 
-import hudson.EnvVars;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -25,16 +24,19 @@ class SvnReverter {
     private SvnKitClient svnKitClient;
     private final SvnKitClientFactory svnFactory;
     private final ModuleResolver moduleResolver;
+    private final ModuleLocationFinder locationFinder;
     private final ChangedRevisions changedRevisions;
 
     SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
             final Messenger messenger, final SvnKitClientFactory svnFactory,
-            final ModuleResolver moduleResolver, final ChangedRevisions changedRevisions) {
+            final ModuleResolver moduleResolver, final ModuleLocationFinder locationFinder,
+            final ChangedRevisions changedRevisions) {
         this.build = build;
         this.listener = listener;
         this.messenger = messenger;
         this.svnFactory = svnFactory;
         this.moduleResolver = moduleResolver;
+        this.locationFinder = locationFinder;
         this.changedRevisions = changedRevisions;
     }
 
@@ -59,7 +61,7 @@ class SvnReverter {
     throws NoSvnAuthException, IOException, InterruptedException, SVNException {
         svnKitClient = svnFactory.create(rootProject, subversionScm);
 
-        final List<ModuleLocation> moduleLocations = getModuleLocations(subversionScm);
+        final List<ModuleLocation> moduleLocations = locationFinder.getModuleLocations(subversionScm);
         final Revisions revisions = changedRevisions.getFor(build);
         final List<File> moduleDirs = Lists.newArrayList();
         for (final ModuleLocation moduleLocation : moduleLocations) {
@@ -77,12 +79,6 @@ class SvnReverter {
         }
 
         return true;
-    }
-
-    private List<ModuleLocation> getModuleLocations(final SubversionSCM subversionScm)
-            throws IOException, InterruptedException {
-        final EnvVars envVars = build.getEnvironment(listener);
-        return Lists.newArrayList(subversionScm.getLocations(envVars, build));
     }
 
     private String getRevertMessageFor(final Revisions revisions) {

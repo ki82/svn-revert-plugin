@@ -24,8 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 
@@ -77,6 +75,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     private SVNException svnException;
     @Mock
     private ChangedRevisions changedRevisions;
+    @Mock
+    private ModuleLocationFinder locationFinder;
 
     private final IOException ioException = new IOException();
 
@@ -87,10 +87,10 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
-        when(subversionScm.getLocations(environmentVariables, build)).thenAnswer(getModuleLocationAnswer());
         when(svnKitClient.commit(anyString(), any(File.class))).thenReturn(true);
         when(svnKitClient.commit(anyString(), any(File.class), any(File.class))).thenReturn(true);
-        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, changedRevisions);
+        when(locationFinder.getModuleLocations(subversionScm)).thenReturn(modules);
+        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, locationFinder, changedRevisions);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Test
     public void shouldLogExceptionIfThrown() throws Exception {
         givenScmWithAuth();
-        when(build.getEnvironment(listener)).thenThrow(ioException);
+        when(locationFinder.getModuleLocations(subversionScm)).thenThrow(ioException);
         reverter.revert(subversionScm);
         verify(messenger).printStackTraceFor(ioException);
     }
@@ -239,17 +239,6 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private String buildCommitMessage() {
         return String.format(SvnReverter.REVERT_MESSAGE, Revisions.create(FIRST_CHANGE).getAllInOrderAsString());
-    }
-
-    private Answer<ModuleLocation[]> getModuleLocationAnswer() {
-        return new Answer<ModuleLocation[]>() {
-
-            @Override
-            public ModuleLocation[] answer(final InvocationOnMock invocation) throws Throwable {
-                return modules.toArray(new ModuleLocation[0]);
-            }
-
-        };
     }
 
 }
