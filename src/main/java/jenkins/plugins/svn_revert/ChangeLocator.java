@@ -13,10 +13,10 @@ import com.google.common.collect.Lists;
 class ChangeLocator {
 
     private final AbstractBuild<?, ?> build;
-    private final ModuleLocationFinder locationFinder;
+    private final ModuleFinder locationFinder;
     private final ChangedFiles changedFiles;
 
-    ChangeLocator(final AbstractBuild<?, ?> build, final ModuleLocationFinder locationFinder,
+    ChangeLocator(final AbstractBuild<?, ?> build, final ModuleFinder locationFinder,
             final ChangedFiles changedFiles) {
         this.build = build;
         this.locationFinder = locationFinder;

@@ -74,7 +74,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Mock
     private ChangedRevisions changedRevisions;
     @Mock
-    private ModuleLocationFinder locationFinder;
+    private ModuleFinder locationFinder;
 
     private final IOException ioException = new IOException();
 
