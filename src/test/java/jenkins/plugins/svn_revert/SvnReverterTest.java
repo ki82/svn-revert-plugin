@@ -88,7 +88,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(svnKitClient.commit(anyString(), any(File.class))).thenReturn(true);
         when(svnKitClient.commit(anyString(), any(File.class), any(File.class))).thenReturn(true);
         when(locationFinder.getModules(subversionScm)).thenReturn(modules);
-        reverter = new SvnReverter(build, listener, messenger, svnFactory, locationFinder, changedRevisions);
+        reverter = new SvnReverter(build, messenger, svnFactory, locationFinder, changedRevisions);
     }
 
     @Test
@@ -99,9 +99,9 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldFailIfNoSvnAuthAvailable() throws Exception {
+    public void shouldReturnFailedIfNoSvnAuthAvailable() throws Exception {
         givenScmWithNoAuth();
-        assertThat(reverter.revert(subversionScm), is(false));
+        assertThat(reverter.revert(subversionScm), is(SvnRevertStatus.REVERT_FAILED));
     }
 
     @Test
@@ -127,6 +127,21 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         verify(messenger).informReverted(Revisions.create(FIRST_CHANGE), REMOTE_REPO);
         verifyNoMoreInteractions(messenger);
+    }
+
+    @Test
+    public void shouldReturnSuccessWhenRevertSuccessful() throws Exception {
+        givenAllRevertConditionsMet();
+
+        assertThat(reverter.revert(subversionScm), is(SvnRevertStatus.REVERT_SUCCESSFUL));
+    }
+
+    @Test
+    public void shouldReturnNothingRevertedWhenFilesOutOfDate() throws Exception {
+        givenAllRevertConditionsMet();
+        when(svnKitClient.commit(anyString(), any(File[].class))).thenReturn(false);
+
+        assertThat(reverter.revert(subversionScm), is(SvnRevertStatus.NOTHING_REVERTED));
     }
 
     @Test

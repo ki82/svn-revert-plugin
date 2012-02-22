@@ -1,6 +1,5 @@
 package jenkins.plugins.svn_revert;
 
-import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
@@ -19,25 +18,22 @@ class SvnReverter {
             "Automatically reverted revision(s) %s since Jenkins build became UNSTABLE.";
     private final Messenger messenger;
     private final AbstractBuild<?, ?> build;
-    private final BuildListener listener;
     private SvnKitClient svnKitClient;
     private final SvnKitClientFactory svnFactory;
     private final ModuleFinder locationFinder;
     private final ChangedRevisions changedRevisions;
 
-    SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
-            final Messenger messenger, final SvnKitClientFactory svnFactory,
-            final ModuleFinder locationFinder,
+    SvnReverter(final AbstractBuild<?,?> build, final Messenger messenger,
+            final SvnKitClientFactory svnFactory, final ModuleFinder locationFinder,
             final ChangedRevisions changedRevisions) {
         this.build = build;
-        this.listener = listener;
         this.messenger = messenger;
         this.svnFactory = svnFactory;
         this.locationFinder = locationFinder;
         this.changedRevisions = changedRevisions;
     }
 
-    boolean revert(final SubversionSCM subversionScm) {
+    SvnRevertStatus revert(final SubversionSCM subversionScm) {
         final AbstractProject<?, ?> rootProject = build.getProject().getRootProject();
 
         try {
@@ -46,14 +42,14 @@ class SvnReverter {
             throw e;
         } catch (final NoSvnAuthException e) {
             messenger.informNoSvnAuthProvider();
-            return false;
+            return SvnRevertStatus.REVERT_FAILED;
         } catch (final Exception e) {
             messenger.printStackTraceFor(e);
-            return false;
+            return SvnRevertStatus.REVERT_FAILED;
         }
     }
 
-    private boolean revertAndCommit(final AbstractProject<?, ?> rootProject,
+    private SvnRevertStatus revertAndCommit(final AbstractProject<?, ?> rootProject,
             final SubversionSCM subversionScm)
     throws NoSvnAuthException, IOException, InterruptedException, SVNException {
         svnKitClient = svnFactory.create(rootProject, subversionScm);
@@ -73,9 +69,10 @@ class SvnReverter {
             informReverted(revisions, modules);
         } else {
             messenger.informFilesToRevertOutOfDate();
+            return SvnRevertStatus.NOTHING_REVERTED;
         }
 
-        return true;
+        return SvnRevertStatus.REVERT_SUCCESSFUL;
     }
 
     private String getRevertMessageFor(final Revisions revisions) {
