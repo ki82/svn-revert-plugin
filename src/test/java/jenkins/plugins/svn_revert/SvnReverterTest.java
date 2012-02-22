@@ -80,7 +80,6 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private final IOException ioException = new IOException();
 
-    private final String revertMessage = "Configured commit message.";
     private final List<ModuleLocation> modules = Lists.newLinkedList();
 
     @Before
