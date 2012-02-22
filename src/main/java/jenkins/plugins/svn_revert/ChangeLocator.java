@@ -26,11 +26,16 @@ class ChangeLocator {
     boolean changesOutsideWorkspace(final SubversionSCM subversionScm) throws IOException, InterruptedException {
         final List<String> modulePaths = Lists.newArrayList();
         try {
-            for (final Module module : locationFinder.getModules(subversionScm)) {
-                modulePaths.add(module.getRepositoryPath(build));
-            }
+            return changedFilesMatchesModules(subversionScm, modulePaths);
         } catch (final SVNException e) {
             return true;
+        }
+    }
+
+    private boolean changedFilesMatchesModules(final SubversionSCM subversionScm,
+            final List<String> modulePaths) throws IOException, InterruptedException, SVNException {
+        for (final Module module : locationFinder.getModules(subversionScm)) {
+            modulePaths.add(module.getRepositoryPath(build));
         }
         for (final String filePath : changedFiles.getRepositoryPathsFor(build)) {
             if (!fileInWorkspace(modulePaths, filePath)) {
