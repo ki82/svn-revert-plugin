@@ -18,6 +18,8 @@ class Messenger {
     static final String FILES_TO_REVERT_OUT_OF_DATE =
             "Tried to revert since build status became UNSTABLE, " +
             "but failed since files to revert are out of date.";
+    static final String CHANGES_OUTSIDE_WORKSPACE =
+            "Will not revert since some changes in commit(s) outside workspace detected.";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
@@ -50,6 +52,10 @@ class Messenger {
 
     void informFilesToRevertOutOfDate() {
         logger.println(FILES_TO_REVERT_OUT_OF_DATE);
+    }
+
+    void informChangesOutsideWorkspace() {
+        logger.println(CHANGES_OUTSIDE_WORKSPACE);
     }
 
     void printStackTraceFor(final Exception exception) {

@@ -59,11 +59,8 @@ class SvnReverter {
     throws NoSvnAuthException, IOException, InterruptedException, SVNException {
         svnKitClient = svnFactory.create(rootProject, subversionScm);
 
-        final EnvVars envVars = build.getEnvironment(listener);
+        final List<ModuleLocation> moduleLocations = getModuleLocations(subversionScm);
         final Revisions revisions = changedRevisions.getFor(build);
-
-        final List<ModuleLocation> moduleLocations =
-                Lists.newArrayList(subversionScm.getLocations(envVars, build));
         final List<File> moduleDirs = Lists.newArrayList();
         for (final ModuleLocation moduleLocation : moduleLocations) {
             final File moduleDir = moduleResolver.getModuleRoot(build, moduleLocation);
@@ -80,6 +77,12 @@ class SvnReverter {
         }
 
         return true;
+    }
+
+    private List<ModuleLocation> getModuleLocations(final SubversionSCM subversionScm)
+            throws IOException, InterruptedException {
+        final EnvVars envVars = build.getEnvironment(listener);
+        return Lists.newArrayList(subversionScm.getLocations(envVars, build));
     }
 
     private String getRevertMessageFor(final Revisions revisions) {

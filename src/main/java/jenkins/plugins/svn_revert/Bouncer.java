@@ -1,31 +1,21 @@
 package jenkins.plugins.svn_revert;
 
 import hudson.Launcher;
+import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.scm.SubversionSCM;
 
+import java.io.IOException;
+
 class Bouncer {
 
     static boolean throwOutIfUnstable(final AbstractBuild<?, ?> build, final Launcher launcher,
             final Messenger messenger, final SvnReverter svnReverter, final Claimer claimer,
-            final RevertMailSender mailer) throws InterruptedException {
+            final BuildListener listener, final ChangeLocator changeLocator,
+            final RevertMailSender mailer) throws InterruptedException, IOException {
 
-        if (preconditionsNotMet(build, messenger)) {
-            return true;
-        }
-
-        if (svnReverter.revert(getSubversionScm(build))) {
-            claimer.claim(build);
-            mailer.sendRevertMail(build);
-            return true;
-        }
-        return false;
-    }
-
-    private static boolean preconditionsNotMet(final AbstractBuild<?, ?> build,
-            final Messenger messenger) {
         if (isNotSubversionJob(build)) {
             messenger.informNotSubversionSCM();
             return true;
@@ -42,11 +32,18 @@ class Bouncer {
             messenger.informNoChanges();
             return true;
         }
-        return false;
-    }
+        final SubversionSCM subversionScm = getSubversionScm(build);
+        if (changeLocator.changesOutsideWorkspace(subversionScm)) {
+            messenger.informChangesOutsideWorkspace();
+            return true;
+        }
 
-    private static SubversionSCM getSubversionScm(final AbstractBuild<?, ?> abstractBuild) {
-        return SubversionSCM.class.cast(abstractBuild.getProject().getRootProject().getScm());
+        if (svnReverter.revert(subversionScm)) {
+            claimer.claim(build);
+            mailer.sendRevertMail(build);
+            return true;
+        }
+        return false;
     }
 
     private static boolean isNotSubversionJob(final AbstractBuild<?, ?> abstractBuild) {
@@ -63,6 +60,10 @@ class Bouncer {
 
     private static boolean noChangesIn(final AbstractBuild<?, ?> build) {
         return build.getChangeSet().isEmptySet();
+    }
+
+    private static SubversionSCM getSubversionScm(final AbstractBuild<?, ?> abstractBuild) {
+        return SubversionSCM.class.cast(abstractBuild.getProject().getRootProject().getScm());
     }
 
     private static boolean previousBuildSuccessful(final AbstractBuild<?, ?> abstractBuild) {
