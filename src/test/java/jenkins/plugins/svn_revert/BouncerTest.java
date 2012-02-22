@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import hudson.Launcher;
-import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
@@ -16,7 +15,6 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.NullSCM;
 import hudson.scm.SubversionSCM;
 
-import java.io.PrintStream;
 import java.util.LinkedList;
 
 import org.junit.Before;
@@ -37,11 +35,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
     @Mock
     private AbstractBuild rootBuild;
     @Mock
-    private BuildListener listener;
-    @Mock
     private Launcher launcher;
-    @Mock
-    private PrintStream logger;
     @Mock
     private FreeStyleBuild previousBuild;
     @Mock
@@ -72,7 +66,6 @@ public class BouncerTest extends AbstractMockitoTestCase {
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
-        when(listener.getLogger()).thenReturn(logger);
         when(build.getPreviousBuild()).thenReturn(previousBuild);
         when(previousBuild.isBuilding()).thenReturn(false);
         when(rootProject.getScm()).thenReturn(subversionScm);
@@ -253,7 +246,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     private boolean throwOutIfUnstable() throws Exception {
-        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, listener, changeLocator, mailer);
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, changeLocator, mailer);
     }
 
     private void givenNotSubversionScm() {
