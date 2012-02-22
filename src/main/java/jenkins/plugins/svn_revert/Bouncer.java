@@ -36,12 +36,15 @@ class Bouncer {
             return true;
         }
 
-        if (svnReverter.revert(subversionScm)) {
+        final SvnRevertStatus revertStatus = svnReverter.revert(subversionScm);
+        if (revertStatus == SvnRevertStatus.REVERT_FAILED) {
+            return false;
+        }
+        if (revertStatus == SvnRevertStatus.REVERT_SUCCESSFUL) {
             claimer.claim(build);
             mailer.sendRevertMail(build);
-            return true;
         }
-        return false;
+        return true;
     }
 
     private static boolean isNotSubversionJob(final AbstractBuild<?, ?> abstractBuild) {

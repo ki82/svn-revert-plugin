@@ -199,7 +199,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldFailBuildWhenRevertFails() throws Exception {
-        when(reverter.revert(subversionScm)).thenReturn(false);
+        when(reverter.revert(subversionScm)).thenReturn(SvnRevertStatus.REVERT_FAILED);
 
         assertThat(throwOutIfUnstable(), is(false));
     }
@@ -213,14 +213,14 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldNotFailBuildWhenRevertSucceeds() throws Exception {
-        when(reverter.revert(subversionScm)).thenReturn(true);
+        when(reverter.revert(subversionScm)).thenReturn(SvnRevertStatus.REVERT_SUCCESSFUL);
 
         assertThat(throwOutIfUnstable(), is(true));
     }
 
     @Test
     public void shouldClaimWhenRevertSucceeds() throws Exception {
-        when(reverter.revert(subversionScm)).thenReturn(true);
+        when(reverter.revert(subversionScm)).thenReturn(SvnRevertStatus.REVERT_SUCCESSFUL);
 
         throwOutIfUnstable();
 
@@ -228,21 +228,32 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldNotClaimWhenRevertFails() throws Exception {
-        when(reverter.revert(subversionScm)).thenReturn(false);
-
-        throwOutIfUnstable();
-
-        verifyZeroInteractions(claimer);
-    }
-
-    @Test
     public void shouldSendMailWhenRevertSucceeds() throws Exception {
-        when(reverter.revert(subversionScm)).thenReturn(true);
+        when(reverter.revert(subversionScm)).thenReturn(SvnRevertStatus.REVERT_SUCCESSFUL);
 
         throwOutIfUnstable();
 
         verify(mailer).sendRevertMail(build);
+    }
+
+    @Test
+    public void shouldNotClaimOrMailWhenRevertFails() throws Exception {
+        when(reverter.revert(subversionScm)).thenReturn(SvnRevertStatus.REVERT_FAILED);
+
+        throwOutIfUnstable();
+
+        verifyZeroInteractions(claimer);
+        verifyZeroInteractions(mailer);
+    }
+
+    @Test
+    public void shouldNotClaimOrMailWhenNothingReverted() throws Exception {
+        when(reverter.revert(subversionScm)).thenReturn(SvnRevertStatus.NOTHING_REVERTED);
+
+        throwOutIfUnstable();
+
+        verifyZeroInteractions(claimer);
+        verifyZeroInteractions(mailer);
     }
 
     private boolean throwOutIfUnstable() throws Exception {

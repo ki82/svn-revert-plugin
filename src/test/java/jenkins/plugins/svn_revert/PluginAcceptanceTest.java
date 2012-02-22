@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 @SuppressWarnings({ "rawtypes", "deprecation" })
 public class PluginAcceptanceTest extends HudsonTestCase {
 
+    private static final String EMAIL_SENT = "An attempt to send an e-mail to empty list of recipients, ignored.";
     private static final long NO_COMMITS = 1;
     private static final long ONE_COMMIT = 2;
     private static final long TWO_COMMITS = 3;
@@ -132,6 +133,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         assertBuildStatus(UNSTABLE, currentBuild);
         assertNothingRevertedSince(TWO_COMMITS);
         assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 0);
+        assertLogNotContains(EMAIL_SENT, currentBuild);
     }
 
     public void testShouldNotRevertAnythingWhenFileToRevertHasChanged() throws Exception {
