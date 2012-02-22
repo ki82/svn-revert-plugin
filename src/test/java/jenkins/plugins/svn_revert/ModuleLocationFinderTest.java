@@ -1,6 +1,6 @@
 package jenkins.plugins.svn_revert;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import hudson.EnvVars;
@@ -9,13 +9,9 @@ import hudson.model.AbstractBuild;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-
-import com.google.common.collect.Lists;
 
 public class ModuleLocationFinderTest extends AbstractMockitoTestCase {
 
@@ -41,10 +37,15 @@ public class ModuleLocationFinderTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void getsModuleLocationsAsList() throws Exception {
-        final List<ModuleLocation> locationsAsList = Lists.newArrayList(moduleLocations);
-        assertThat(locationFinder.getModuleLocations(subversionScm),
-                equalTo(locationsAsList));
+    public void shouldReturnTheSameNumberOfModulesAsInScm() throws Exception {
+        assertThat(locationFinder.getModules(subversionScm).size(), is(moduleLocations.length));
+    }
+
+    @Test
+    public void shouldReturnWrappedModuleLocation() throws Exception {
+        ModuleLocation actualModuleLocation = locationFinder.getModules(subversionScm).get(0).getModuleLocation();
+        assertThat(actualModuleLocation, is(moduleLocation));
+
     }
 
 }

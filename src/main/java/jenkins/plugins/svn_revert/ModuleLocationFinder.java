@@ -7,6 +7,7 @@ import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -21,10 +22,14 @@ class ModuleLocationFinder {
         this.listener = listener;
     }
 
-    List<ModuleLocation> getModuleLocations(final SubversionSCM subversionScm)
+    List<Module> getModules(final SubversionSCM subversionScm)
             throws IOException, InterruptedException {
         final EnvVars envVars = build.getEnvironment(listener);
-        return Lists.newArrayList(subversionScm.getLocations(envVars, build));
+        final ArrayList<Module> modules = Lists.newArrayList();
+        for (final ModuleLocation moduleLocation : subversionScm.getLocations(envVars, build)) {
+            modules.add(new Module(moduleLocation));
+        }
+        return modules;
     }
 
 }

@@ -39,7 +39,7 @@ public class JenkinsGlue extends Notifier {
         final ChangedFiles changedFiles = new ChangedFiles();
         final ModuleLocationFinder locationFinder = new ModuleLocationFinder(build, listener);
         final SvnReverter svnReverter = new SvnReverter(build, listener, messenger,
-                new SvnKitClientFactory(), new ModuleResolver(), locationFinder, changedRevisions);
+                new SvnKitClientFactory(), locationFinder, changedRevisions);
         final Claimer claimer = new Claimer(changedRevisions);
         final RevertMailSender mailer = new RevertMailSender(new RevertMailFormatter(changedRevisions), listener);
         final ChangeLocator changeLocator = new ChangeLocator(build, locationFinder, changedFiles );

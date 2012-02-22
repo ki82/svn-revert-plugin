@@ -5,11 +5,11 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import hudson.model.AbstractBuild;
 import hudson.scm.SubversionSCM;
-import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -27,19 +27,27 @@ public class ChangeLocatorTest extends AbstractMockitoTestCase {
     private ModuleLocationFinder locationFinder;
     @Mock
     private ChangedFiles changedFiles;
+    @Mock
+    private Module module;
 
-    private final List<ModuleLocation> moduleLocations = Lists.newArrayList();
-
+    private final List<Module> moduleLocations = Lists.newArrayList();
 
     @Before
     public void setUp() throws Exception {
-        when(locationFinder.getModuleLocations(subversionScm)).thenReturn(moduleLocations);
+        moduleLocations.add(module);
+        when(locationFinder.getModules(subversionScm)).thenReturn(moduleLocations);
         changeLocator = new ChangeLocator(build, locationFinder, changedFiles);
     }
 
     @Test
     public void returnsFalseIfAllChangesInWorkspace() throws Exception {
         assertThat(changeLocator.changesOutsideWorkspace(subversionScm), is(false));
+    }
+
+    @Ignore
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowWhenModuleUrlDoesNotMatchRepositoryUrl() throws Exception {
+//        when(moduleLocation).
     }
 
 }
