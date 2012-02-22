@@ -68,7 +68,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     public void testShouldNotRevertWhenBuildStatusIsSuccess() throws Exception {
-        givenJobWithSubversionScm();
+        givenJobWithOneModule();
         givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
 
         currentBuild = whenBuilding();
@@ -79,7 +79,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     public void testShouldLogAndRevertWhenBuildStatusChangesToUnstable() throws Exception {
-        givenJobWithSubversionScm();
+        givenJobWithOneModule();
 
         currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
 
@@ -109,7 +109,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     public void testCanRevertMultipleRevisions() throws Exception {
-        givenJobWithSubversionScm();
+        givenJobWithOneModule();
 
         currentBuild = whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges();
 
@@ -122,7 +122,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     public void testWillNotRevertIfFileHasChangedSinceBuildStarted() throws Exception {
-        givenJobWithSubversionScm();
+        givenJobWithOneModule();
         givenPreviousBuildSuccessful();
         givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
@@ -172,7 +172,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
     }
 
     private void givenJobWithTwoModulesInSameRepository() throws Exception, IOException {
-        givenJobWithSubversionScm();
+        givenJobWithOneModule();
         final File repo = getRepoWithTwoModules();
         svnUrl = "file://" + repo.getPath();
         final String[] svnUrls = new String[]{ svnUrl + "/" + MODULE_1, svnUrl + "/" + MODULE_2 };
@@ -197,7 +197,7 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         job.setScm(new NullSCM());
     }
 
-    private void givenJobWithSubversionScm() throws Exception {
+    private void givenJobWithOneModule() throws Exception {
         job = createFreeStyleProject("subversion-scm-job");
         job.getPublishersList().add(new JenkinsGlue());
         job.setAssignedLabel(hudson.getSelfLabel());
