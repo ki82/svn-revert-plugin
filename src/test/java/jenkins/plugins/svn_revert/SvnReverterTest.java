@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -14,7 +15,6 @@ import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.SubversionSCM;
-import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,8 +62,6 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Mock
     private SvnKitClient svnKitClient;
     @Mock
-    private ModuleResolver moduleResolver;
-    @Mock
     private File moduleDir;
     @Mock
     private File moduleDir2;
@@ -80,7 +78,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private final IOException ioException = new IOException();
 
-    private final List<ModuleLocation> modules = Lists.newLinkedList();
+    private final List<Module> modules = Lists.newLinkedList();
 
     @Before
     public void setup() throws Exception {
@@ -89,8 +87,8 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(project.getRootProject()).thenReturn(rootProject);
         when(svnKitClient.commit(anyString(), any(File.class))).thenReturn(true);
         when(svnKitClient.commit(anyString(), any(File.class), any(File.class))).thenReturn(true);
-        when(locationFinder.getModuleLocations(subversionScm)).thenReturn(modules);
-        reverter = new SvnReverter(build, listener, messenger, svnFactory, moduleResolver, locationFinder, changedRevisions);
+        when(locationFinder.getModules(subversionScm)).thenReturn(modules);
+        reverter = new SvnReverter(build, listener, messenger, svnFactory, locationFinder, changedRevisions);
     }
 
     @Test
@@ -109,7 +107,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Test
     public void shouldLogExceptionIfThrown() throws Exception {
         givenScmWithAuth();
-        when(locationFinder.getModuleLocations(subversionScm)).thenThrow(ioException);
+        when(locationFinder.getModules(subversionScm)).thenThrow(ioException);
         reverter.revert(subversionScm);
         verify(messenger).printStackTraceFor(ioException);
     }
@@ -226,10 +224,11 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
     private void givenModuleLocations(final File moduleDir, final SVNURL svnUrl,
             final String remoteLocation, final String localLocation) throws Exception {
-        final ModuleLocation moduleLocation = new ModuleLocation(remoteLocation, localLocation);
-        modules.add(moduleLocation);
-        when(moduleResolver.getModuleRoot(build, moduleLocation)).thenReturn(moduleDir);
-        when(moduleResolver.getSvnUrl(moduleLocation)).thenReturn(svnUrl);
+        final Module module = mock(Module.class);
+        modules.add(module);
+        when(module.getModuleRoot(build)).thenReturn(moduleDir);
+        when(module.getSvnUrl()).thenReturn(svnUrl);
+        when(module.getURL()).thenReturn(remoteLocation);
     }
 
     private void givenScmWithNoAuth() throws Exception {

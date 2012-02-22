@@ -2,7 +2,6 @@ package jenkins.plugins.svn_revert;
 
 import hudson.model.AbstractBuild;
 import hudson.scm.SubversionSCM;
-import hudson.scm.SubversionSCM.ModuleLocation;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,16 +26,8 @@ class ChangeLocator {
     boolean changesOutsideWorkspace(final SubversionSCM subversionScm) throws IOException, InterruptedException {
         final List<String> modulePaths = Lists.newArrayList();
         try {
-            for (final ModuleLocation moduleLocation : locationFinder.getModuleLocations(subversionScm)) {
-                final String fullUrl = moduleLocation.getURL();
-                final String repositoryUrl = moduleLocation.getRepositoryRoot(build.getProject().getRootProject()).toString();
-                String moduleRepoPath;
-                if (fullUrl.startsWith(repositoryUrl)) {
-                    moduleRepoPath = fullUrl.substring(repositoryUrl.length());
-                    modulePaths.add(moduleRepoPath);
-                } else {
-                    throw new IllegalStateException("Module not in repo root (?)");
-                }
+            for (final Module module : locationFinder.getModules(subversionScm)) {
+                modulePaths.add(module.getRepositoryPath(build));
             }
         } catch (final SVNException e) {
             e.printStackTrace();
