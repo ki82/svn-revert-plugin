@@ -42,7 +42,7 @@ class ChangeLocator {
             e.printStackTrace();
             return true;
         }
-        for (final String filePath : changedFiles.getFilenamesFor(build)) {
+        for (final String filePath : changedFiles.getRepositoryPathsFor(build)) {
             if (!fileInWorkspace(modulePaths, filePath)) {
                 return true;
             }
