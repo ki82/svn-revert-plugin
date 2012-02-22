@@ -10,8 +10,7 @@ import org.tmatesoft.svn.core.SVNURL;
 
 class ModuleResolver {
 
-    File getModuleRoot(final AbstractBuild<?, ?> build,
-            final ModuleLocation moduleLocation) {
+    File getModuleRoot(final AbstractBuild<?, ?> build, final ModuleLocation moduleLocation) {
         return new File(build.getWorkspace() + File.separator + moduleLocation.getLocalDir());
     }
 
