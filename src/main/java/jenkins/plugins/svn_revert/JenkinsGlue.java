@@ -35,7 +35,7 @@ public class JenkinsGlue extends Notifier {
             final Launcher launcher, final BuildListener listener)
     throws InterruptedException, IOException {
         final Messenger messenger = new Messenger(listener.getLogger());
-        final ChangedRevisions changedRevisions = new ChangedRevisions();
+        final ChangedRevisions changedRevisions = new ChangedRevisions(build);
         final ChangedFiles changedFiles = new ChangedFiles();
         final ModuleFinder locationFinder = new ModuleFinder(build, listener);
         final SvnReverter svnReverter = new SvnReverter(build, listener, messenger,

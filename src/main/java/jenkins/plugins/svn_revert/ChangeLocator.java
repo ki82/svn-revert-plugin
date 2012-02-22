@@ -37,7 +37,7 @@ class ChangeLocator {
         for (final Module module : locationFinder.getModules(subversionScm)) {
             modulePaths.add(module.getRepositoryPath(build));
         }
-        for (final String filePath : changedFiles.getRepositoryPathsFor(build)) {
+        for (final String filePath : changedFiles.getRepositoryPathsFor()) {
             if (!fileInWorkspace(modulePaths, filePath)) {
                 return true;
             }

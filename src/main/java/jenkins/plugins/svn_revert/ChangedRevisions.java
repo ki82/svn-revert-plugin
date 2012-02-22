@@ -10,7 +10,13 @@ import com.google.common.collect.Lists;
 
 class ChangedRevisions {
 
-    Revisions getFor(final AbstractBuild<?, ?> build) {
+    private final AbstractBuild<?, ?> build;
+
+    ChangedRevisions(final AbstractBuild<?, ?> build) {
+        this.build = build;
+    }
+
+    Revisions getRevisions() {
         final ChangeLogSet<? extends Entry> cs = build.getChangeSet();
         final List<Integer> revisions = Lists.newArrayList();
         for (final Entry entry : cs) {
