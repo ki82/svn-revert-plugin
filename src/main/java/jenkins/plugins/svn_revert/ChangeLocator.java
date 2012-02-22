@@ -1,10 +1,6 @@
 package jenkins.plugins.svn_revert;
 
-import hudson.EnvVars;
-import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
-import hudson.scm.ChangeLogSet.AffectedFile;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 
@@ -18,17 +14,20 @@ import com.google.common.collect.Lists;
 class ChangeLocator {
 
     private final AbstractBuild<?, ?> build;
-    private final BuildListener listener;
+    private final ModuleLocationFinder locationFinder;
+    private final ChangedFiles changedFiles;
 
-    ChangeLocator(final AbstractBuild<?, ?> build, final BuildListener listener) {
+    ChangeLocator(final AbstractBuild<?, ?> build, final ModuleLocationFinder locationFinder,
+            final ChangedFiles changedFiles) {
         this.build = build;
-        this.listener = listener;
+        this.locationFinder = locationFinder;
+        this.changedFiles = changedFiles;
     }
 
     boolean changesOutsideWorkspace(final SubversionSCM subversionScm) throws IOException, InterruptedException {
         final List<String> modulePaths = Lists.newArrayList();
         try {
-            for (final ModuleLocation moduleLocation : getModuleLocations(subversionScm)) {
+            for (final ModuleLocation moduleLocation : locationFinder.getModuleLocations(subversionScm)) {
                 final String fullUrl = moduleLocation.getURL();
                 final String repositoryUrl = moduleLocation.getRepositoryRoot(build.getProject().getRootProject()).toString();
                 String moduleRepoPath;
@@ -43,31 +42,21 @@ class ChangeLocator {
             e.printStackTrace();
             return true;
         }
-        for (final Entry change : build.getChangeSet()) {
-            for (final AffectedFile affectedFile : change.getAffectedFiles()) {
-                if (!fileInWorkspace(modulePaths, affectedFile)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-
-    private List<ModuleLocation> getModuleLocations(final SubversionSCM subversionScm)
-            throws IOException, InterruptedException {
-        final EnvVars envVars = build.getEnvironment(listener);
-        return Lists.newArrayList(subversionScm.getLocations(envVars, build));
-    }
-
-    private boolean fileInWorkspace(final List<String> modulePaths, final AffectedFile affectedFile) {
-        for (final String modulePath : modulePaths) {
-            if (affectedFile.getPath().startsWith(modulePath)) {
+        for (final String filePath : changedFiles.getFilenamesFor(build)) {
+            if (!fileInWorkspace(modulePaths, filePath)) {
                 return true;
             }
         }
         return false;
     }
 
+    private boolean fileInWorkspace(final List<String> modulePaths, final String filePath) {
+        for (final String modulePath : modulePaths) {
+            if (filePath.startsWith(modulePath)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

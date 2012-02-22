@@ -31,17 +31,19 @@ public class JenkinsGlue extends Notifier {
     }
 
     @Override
-    public boolean perform(final AbstractBuild<?, ?> abstractBuild,
+    public boolean perform(final AbstractBuild<?, ?> build,
             final Launcher launcher, final BuildListener listener)
     throws InterruptedException, IOException {
         final Messenger messenger = new Messenger(listener.getLogger());
         final ChangedRevisions changedRevisions = new ChangedRevisions();
-        final SvnReverter svnReverter = new SvnReverter(abstractBuild, listener, messenger,
-                new SvnKitClientFactory(), new ModuleResolver(), changedRevisions);
+        final ChangedFiles changedFiles = new ChangedFiles();
+        final ModuleLocationFinder locationFinder = new ModuleLocationFinder(build, listener);
+        final SvnReverter svnReverter = new SvnReverter(build, listener, messenger,
+                new SvnKitClientFactory(), new ModuleResolver(), locationFinder, changedRevisions);
         final Claimer claimer = new Claimer(changedRevisions);
         final RevertMailSender mailer = new RevertMailSender(new RevertMailFormatter(changedRevisions), listener);
-        final ChangeLocator changeLocator = new ChangeLocator(abstractBuild, listener);
-        return Bouncer.throwOutIfUnstable(abstractBuild, launcher, messenger, svnReverter, claimer, changeLocator, mailer);
+        final ChangeLocator changeLocator = new ChangeLocator(build, locationFinder, changedFiles );
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, svnReverter, claimer, changeLocator, mailer);
     }
 
     @Extension
