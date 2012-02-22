@@ -29,7 +29,7 @@ import org.tmatesoft.svn.core.wc.SVNStatus;
 import com.google.common.collect.Lists;
 
 @SuppressWarnings({ "rawtypes", "deprecation" })
-public class SvnRevertPluginTest extends HudsonTestCase {
+public class PluginAcceptanceTest extends HudsonTestCase {
 
     private static final long NO_COMMITS = 1;
     private static final long ONE_COMMIT = 2;
