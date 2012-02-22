@@ -50,12 +50,12 @@ public class ChangedFilesTest extends AbstractMockitoTestCase {
         affectedFiles.add(affectedFile1);
         when(affectedFile2.getPath()).thenReturn(FILE_2);
         when(build.getChangeSet()).thenReturn(changeLogSet);
-        changedFiles = new ChangedFiles();
+        changedFiles = new ChangedFiles(build);
     }
 
     @Test
         public void testGetRepositoryPathsFor() throws Exception {
-            final List<String> actualFilenames = changedFiles.getRepositoryPathsFor(build);
+            final List<String> actualFilenames = changedFiles.getRepositoryPathsFor();
             final List<String> expectedFilenames = Lists.newArrayList(FILE_1, FILE_2);
 
             when(build.getChangeSet()).thenReturn(changeLogSet);

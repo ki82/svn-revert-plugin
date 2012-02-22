@@ -59,7 +59,7 @@ class SvnReverter {
         svnKitClient = svnFactory.create(rootProject, subversionScm);
 
         final List<Module> modules = locationFinder.getModules(subversionScm);
-        final Revisions revisions = changedRevisions.getFor(build);
+        final Revisions revisions = changedRevisions.getRevisions();
         final List<File> moduleDirs = Lists.newArrayList();
         for (final Module module : modules) {
             final File moduleDir = module.getModuleRoot(build);

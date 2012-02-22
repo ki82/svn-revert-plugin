@@ -174,7 +174,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     @Test
     public void shouldRevertMultipleRevisionsWhenMultipleCommitsSinceLastBuild() throws Exception {
         givenAllRevertConditionsMet();
-        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(FIRST_CHANGE, SECOND_CHANGE));
+        when(changedRevisions.getRevisions()).thenReturn(Revisions.create(FIRST_CHANGE, SECOND_CHANGE));
 
         reverter.revert(subversionScm);
 
@@ -196,7 +196,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
             IOException, InterruptedException {
         givenAllRevertConditionsMet();
         givenModuleLocations(moduleDir2, svnUrl2, REMOTE_REPO_2, LOCAL_REPO_2);
-        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(FIRST_CHANGE));
+        when(changedRevisions.getRevisions()).thenReturn(Revisions.create(FIRST_CHANGE));
     }
 
     private void givenRepositoryWithoutChanges() throws Exception {
@@ -211,7 +211,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     }
 
     private void givenChangesInFirstRepository() {
-        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(FIRST_CHANGE));
+        when(changedRevisions.getRevisions()).thenReturn(Revisions.create(FIRST_CHANGE));
     }
 
     private void givenScmWithAuth() throws Exception {

@@ -16,7 +16,7 @@ class RevertMailFormatter {
     public MimeMessage format(final MimeMessage mail, final AbstractBuild<?, ?> build,
             final String jenkinsUrl)
             throws MessagingException {
-        final String revisions = changedRevisions.getFor(build).getAllInOrderAsString();
+        final String revisions = changedRevisions.getRevisions().getAllInOrderAsString();
         mail.setSubject(String.format("Reverted revision(s): %s", revisions));
         final String jobName = build.getProject().getRootProject().getName();
         mail.setText(String.format(

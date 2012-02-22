@@ -36,7 +36,7 @@ public class ClaimerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldClaimWhenRevertSucceds() throws Exception {
-        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(3, 4, 7));
+        when(changedRevisions.getRevisions()).thenReturn(Revisions.create(3, 4, 7));
         claimer.claim(build);
 
         verify(claimBuildAction).claim(Claimer.CLAIMED_BY, "Reverted revision(s) 3, 4, 7", false);

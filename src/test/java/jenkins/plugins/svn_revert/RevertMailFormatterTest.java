@@ -35,7 +35,7 @@ public class RevertMailFormatterTest extends AbstractMockitoTestCase {
 
     @Before
     public void setup() throws Exception {
-        when(changedRevisions.getFor(build)).thenReturn(Revisions.create(123, 124));
+        when(changedRevisions.getRevisions()).thenReturn(Revisions.create(123, 124));
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
         when(rootProject.getName()).thenReturn("job-name");

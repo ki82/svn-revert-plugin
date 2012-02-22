@@ -39,7 +39,7 @@ public class ChangeLocatorTest extends AbstractMockitoTestCase {
     public void setUp() throws Exception {
         moduleLocations.add(module);
         when(locationFinder.getModules(subversionScm)).thenReturn(moduleLocations);
-        when(changedFiles.getRepositoryPathsFor(build)).thenReturn(changedFilePaths);
+        when(changedFiles.getRepositoryPathsFor()).thenReturn(changedFilePaths);
         changeLocator = new ChangeLocator(build, locationFinder, changedFiles);
     }
 
