@@ -13,9 +13,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-public class ModuleLocationFinderTest extends AbstractMockitoTestCase {
+public class ModuleFinderTest extends AbstractMockitoTestCase {
 
-    private ModuleLocationFinder locationFinder;
+    private ModuleFinder locationFinder;
 
     @Mock
     private AbstractBuild<?, ?> build;
@@ -33,7 +33,7 @@ public class ModuleLocationFinderTest extends AbstractMockitoTestCase {
     public void setUp() throws Exception {
         when(build.getEnvironment(listener)).thenReturn(environmentVariables);
         when(subversionScm.getLocations(environmentVariables, build)).thenReturn(moduleLocations);
-        locationFinder = new ModuleLocationFinder(build, listener);
+        locationFinder = new ModuleFinder(build, listener);
     }
 
     @Test

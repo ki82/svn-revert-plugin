@@ -24,7 +24,7 @@ public class ChangeLocatorTest extends AbstractMockitoTestCase {
     @Mock
     private SubversionSCM subversionScm;
     @Mock
-    private ModuleLocationFinder locationFinder;
+    private ModuleFinder locationFinder;
     @Mock
     private ChangedFiles changedFiles;
     @Mock

@@ -22,12 +22,12 @@ class SvnReverter {
     private final BuildListener listener;
     private SvnKitClient svnKitClient;
     private final SvnKitClientFactory svnFactory;
-    private final ModuleLocationFinder locationFinder;
+    private final ModuleFinder locationFinder;
     private final ChangedRevisions changedRevisions;
 
     SvnReverter(final AbstractBuild<?,?> build, final BuildListener listener,
             final Messenger messenger, final SvnKitClientFactory svnFactory,
-            final ModuleLocationFinder locationFinder,
+            final ModuleFinder locationFinder,
             final ChangedRevisions changedRevisions) {
         this.build = build;
         this.listener = listener;

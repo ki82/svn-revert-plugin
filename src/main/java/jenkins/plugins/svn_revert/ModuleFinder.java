@@ -12,12 +12,12 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-class ModuleLocationFinder {
+class ModuleFinder {
 
     private final AbstractBuild<?, ?> build;
     private final BuildListener listener;
 
-    ModuleLocationFinder(final AbstractBuild<?, ?> build, final BuildListener listener) {
+    ModuleFinder(final AbstractBuild<?, ?> build, final BuildListener listener) {
         this.build = build;
         this.listener = listener;
     }
