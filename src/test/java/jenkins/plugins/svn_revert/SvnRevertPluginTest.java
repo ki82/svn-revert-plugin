@@ -147,6 +147,21 @@ public class SvnRevertPluginTest extends HudsonTestCase {
         assertThatStringContainsTimes(logFor(currentBuild), TWO_REVERTED_REVISIONS, 0);
     }
 
+    public void testShouldNotRevertAnythingWhenWorkspaceOnlyContainsPartsOfCommit()
+    throws Exception {
+        givenJobWithOneModule();
+        givenPreviousBuildSuccessful();
+        givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1, MODIFIED_FILE_IN_MODULE_2);
+        givenNextBuildWillBe(UNSTABLE);
+
+        currentBuild = whenBuilding();
+
+        final String log = logFor(currentBuild);
+        assertNothingRevertedSince(ONE_COMMIT);
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertThatStringContainsTimes(log, ONE_REVERTED_REVISION, 0);
+    }
+
     private FreeStyleBuild whenFileChangedDuringBuilding(final String file) throws Exception, InterruptedException,
             ExecutionException {
         final Future<FreeStyleBuild> future = job.scheduleBuild2(1);

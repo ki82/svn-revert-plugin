@@ -60,13 +60,15 @@ public class BouncerTest extends AbstractMockitoTestCase {
     private NullSCM nullScm;
     @Mock
     private RevertMailSender mailer;
+    @Mock
+    private ChangeLocator changeLocator;
 
     private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
     private EntryImpl entry;
     private LinkedList<EntryImpl> entryList;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
@@ -74,6 +76,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
         when(build.getPreviousBuild()).thenReturn(previousBuild);
         when(previousBuild.isBuilding()).thenReturn(false);
         when(rootProject.getScm()).thenReturn(subversionScm);
+        when(changeLocator.changesOutsideWorkspace(subversionScm)).thenReturn(false);
         givenMayRevert();
     }
 
@@ -130,6 +133,15 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     @Test
+    public void shouldNotRevertIfChangesOutsideWorkspace() throws Exception {
+        when(changeLocator.changesOutsideWorkspace(subversionScm)).thenReturn(true);
+
+        throwOutIfUnstable();
+
+        verifyNotReverted();
+    }
+
+    @Test
     public void shouldLogIfRepoIsNotSubversion() throws Exception {
         givenNotSubversionScm();
         throwOutIfUnstable();
@@ -161,6 +173,15 @@ public class BouncerTest extends AbstractMockitoTestCase {
         throwOutIfUnstable();
 
         verify(messenger).informNoChanges();
+    }
+
+    @Test
+    public void shouldLogWhenChangesOutsideWorkspace() throws Exception {
+        when(changeLocator.changesOutsideWorkspace(subversionScm)).thenReturn(true);
+
+        throwOutIfUnstable();
+
+        verify(messenger).informChangesOutsideWorkspace();
     }
 
     @Test
@@ -232,7 +253,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     private boolean throwOutIfUnstable() throws Exception {
-        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, mailer);
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, listener, changeLocator, mailer);
     }
 
     private void givenNotSubversionScm() {

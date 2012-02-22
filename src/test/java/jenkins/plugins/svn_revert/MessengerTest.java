@@ -74,4 +74,10 @@ public class MessengerTest extends AbstractMockitoTestCase {
         messenger.informNoChanges();
         verify(logger).println(Messenger.NO_CHANGES);
     }
+
+    @Test
+    public void logsWhenChangesOutsideWorkspace() throws Exception {
+        messenger.informChangesOutsideWorkspace();
+        verify(logger).println(Messenger.CHANGES_OUTSIDE_WORKSPACE);
+    }
 }
