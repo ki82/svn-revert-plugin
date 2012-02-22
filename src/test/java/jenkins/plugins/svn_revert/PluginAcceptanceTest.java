@@ -133,7 +133,6 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         assertBuildStatus(UNSTABLE, currentBuild);
         assertNothingRevertedSince(TWO_COMMITS);
         assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 0);
-        assertLogNotContains(EMAIL_SENT, currentBuild);
     }
 
     public void testShouldNotRevertAnythingWhenFileToRevertHasChanged() throws Exception {
@@ -239,6 +238,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
     private void assertNothingRevertedSince(final long revisionNumber) throws Exception {
         assertEquals("HEAD revision", revisionNumber, getHeadSvnRevision());
+        assertLogNotContains(EMAIL_SENT, currentBuild);
     }
 
     private void assertFileReverted(final String path)
@@ -247,6 +247,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
         final FilePath file = build.getWorkspace().child(path);
         assertFalse("File '" + path + "' is not reverted (because it exists)", file.exists());
+        assertLogContains(EMAIL_SENT, currentBuild);
     }
 
     private void assertThatStringContainsTimes(
