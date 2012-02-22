@@ -54,13 +54,13 @@ public class ChangedFilesTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void testGetFilenamesFor() throws Exception {
-        final List<String> actualFilenames = changedFiles.getFilenamesFor(build);
-        final List<String> expectedFilenames = Lists.newArrayList(FILE_1, FILE_2);
+        public void testGetRepositoryPathsFor() throws Exception {
+            final List<String> actualFilenames = changedFiles.getRepositoryPathsFor(build);
+            final List<String> expectedFilenames = Lists.newArrayList(FILE_1, FILE_2);
 
-        when(build.getChangeSet()).thenReturn(changeLogSet);
+            when(build.getChangeSet()).thenReturn(changeLogSet);
 
-        assertThat(actualFilenames, equalTo(expectedFilenames));
-    }
+            assertThat(actualFilenames, equalTo(expectedFilenames));
+        }
 
 }

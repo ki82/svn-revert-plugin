@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 
 class ChangedFiles {
 
-    List<String> getFilenamesFor(final AbstractBuild<?, ?> build) {
+    List<String> getRepositoryPathsFor(final AbstractBuild<?, ?> build) {
         final List<String> filePaths = Lists.newLinkedList();
         for (final Entry change : build.getChangeSet()) {
             for (final AffectedFile affectedFile : change.getAffectedFiles()) {
