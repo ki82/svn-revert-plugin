@@ -41,7 +41,7 @@ public class JenkinsGlue extends Notifier {
         final Claimer claimer = new Claimer(changedRevisions);
         final RevertMailSender mailer = new RevertMailSender(new RevertMailFormatter(changedRevisions), listener);
         final ChangeLocator changeLocator = new ChangeLocator(abstractBuild, listener);
-        return Bouncer.throwOutIfUnstable(abstractBuild, launcher, messenger, svnReverter, claimer, listener, changeLocator , mailer);
+        return Bouncer.throwOutIfUnstable(abstractBuild, launcher, messenger, svnReverter, claimer, changeLocator, mailer);
     }
 
     @Extension

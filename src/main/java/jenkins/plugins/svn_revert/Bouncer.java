@@ -1,7 +1,6 @@
 package jenkins.plugins.svn_revert;
 
 import hudson.Launcher;
-import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -13,8 +12,7 @@ class Bouncer {
 
     static boolean throwOutIfUnstable(final AbstractBuild<?, ?> build, final Launcher launcher,
             final Messenger messenger, final SvnReverter svnReverter, final Claimer claimer,
-            final BuildListener listener, final ChangeLocator changeLocator,
-            final RevertMailSender mailer) throws InterruptedException, IOException {
+            final ChangeLocator changeLocator, final RevertMailSender mailer) throws InterruptedException, IOException {
 
         if (isNotSubversionJob(build)) {
             messenger.informNotSubversionSCM();
