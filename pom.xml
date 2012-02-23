@@ -10,9 +10,9 @@
   </parent>
   <name>Jenkins Subversion Revert Plugin</name>
   <scm>
-    <url>http://github.com/ki82/svn-revert-plugin</url>
-    <connection>scm:git:git://github.com/ki82/svn-revert-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:ki82/svn-revert-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/svn-revert-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/svn-revert-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/svn-revert-plugin.git</developerConnection>
   </scm>
   <repositories>
     <repository>
