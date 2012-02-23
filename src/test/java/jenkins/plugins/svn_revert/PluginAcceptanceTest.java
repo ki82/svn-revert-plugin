@@ -2,7 +2,6 @@ package jenkins.plugins.svn_revert;
 
 import static hudson.model.Result.SUCCESS;
 import static hudson.model.Result.UNSTABLE;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import hudson.FilePath;
@@ -64,7 +63,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
 
-        assertThat(logFor(currentBuild), containsString(Messenger.NOT_SUBVERSION_SCM));
+        assertLogContains(Messenger.NOT_SUBVERSION_SCM, currentBuild);
         assertBuildStatus(UNSTABLE, currentBuild);
     }
 
@@ -74,7 +73,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         currentBuild = whenBuilding();
 
-        assertThat(logFor(currentBuild), containsString(Messenger.BUILD_STATUS_NOT_UNSTABLE));
+        assertLogContains(Messenger.BUILD_STATUS_NOT_UNSTABLE, currentBuild);
         assertBuildStatus(SUCCESS, currentBuild);
         assertNothingRevertedSince(ONE_COMMIT);
     }
@@ -84,12 +83,10 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
 
-        final String log = logFor(currentBuild);
-
         assertBuildStatus(UNSTABLE, currentBuild);
         assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
-        assertThat(log, containsString(svnUrl));
-        assertThat(log, containsString(ONE_REVERTED_REVISION));
+        assertLogContains(svnUrl, currentBuild);
+        assertLogContains(ONE_REVERTED_REVISION, currentBuild);
     }
 
     public void testCanRevertMultipleModulesInSameRepository() throws Exception {
@@ -100,13 +97,11 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         currentBuild = whenBuilding();
 
-        final String log = logFor(currentBuild);
-
         assertBuildStatus(UNSTABLE, currentBuild);
         assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
-        assertThat(log, containsString(MODULE_1));
-        assertThat(log, containsString(MODULE_2));
-        assertThatStringContainsTimes(log, ONE_REVERTED_REVISION, 2);
+        assertLogContains(MODULE_1, currentBuild);
+        assertLogContains(MODULE_2, currentBuild);
+        assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 2);
     }
 
     public void testCanRevertMultipleRevisions() throws Exception {
@@ -114,15 +109,13 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         currentBuild = whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges();
 
-        final String log = logFor(currentBuild);
-
         assertBuildStatus(UNSTABLE, currentBuild);
         assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
-        assertThat(log, containsString(svnUrl));
-        assertThat(log, containsString(TWO_REVERTED_REVISIONS));
+        assertLogContains(svnUrl, currentBuild);
+        assertLogContains(TWO_REVERTED_REVISIONS, currentBuild);
     }
 
-    public void testWillNotRevertIfFileHasChangedSinceBuildStarted() throws Exception {
+    public void testWillNotRevertWhenFileHasChangedSinceBuildStarted() throws Exception {
         givenJobWithOneModule();
         givenPreviousBuildSuccessful();
         givenChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
@@ -132,7 +125,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         assertBuildStatus(UNSTABLE, currentBuild);
         assertNothingRevertedSince(TWO_COMMITS);
-        assertThatStringContainsTimes(logFor(currentBuild), ONE_REVERTED_REVISION, 0);
+        assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
     }
 
     public void testShouldNotRevertAnythingWhenFileToRevertHasChanged() throws Exception {
@@ -145,7 +138,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         assertNothingRevertedSince(TWO_COMMITS);
         assertBuildStatus(UNSTABLE, currentBuild);
-        assertThatStringContainsTimes(logFor(currentBuild), TWO_REVERTED_REVISIONS, 0);
+        assertLogNotContains(TWO_REVERTED_REVISIONS, currentBuild);
     }
 
     public void testShouldNotRevertAnythingWhenWorkspaceOnlyContainsPartsOfCommit()
@@ -157,17 +150,9 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         currentBuild = whenBuilding();
 
-        final String log = logFor(currentBuild);
         assertNothingRevertedSince(ONE_COMMIT);
         assertBuildStatus(UNSTABLE, currentBuild);
-        assertThatStringContainsTimes(log, ONE_REVERTED_REVISION, 0);
-    }
-
-    private FreeStyleBuild whenFileChangedDuringBuilding(final String file) throws Exception, InterruptedException,
-            ExecutionException {
-        final Future<FreeStyleBuild> future = job.scheduleBuild2(1);
-        givenChangesInSubversionIn(file);
-        return future.get();
+        assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
     }
 
     private void givenSubversionScmWithOneModule() throws Exception {
@@ -199,7 +184,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     private void givenPreviousBuildSuccessful() throws Exception {
-        assertBuildStatusSuccess(whenBuilding());
+        assertBuildStatusSuccess(scheduleBuild());
     }
 
     private void givenNextBuildWillBe(final Result result) throws Exception {
@@ -220,6 +205,12 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         job.setScm(scm);
     }
 
+    private FreeStyleBuild whenBuilding() throws Exception {
+        final FreeStyleBuild build = scheduleBuild();
+        printLogFor(build);
+        return build;
+    }
+
     private FreeStyleBuild whenPreviousJobSuccessfulAndCurrentUnstable() throws Exception,
             InterruptedException, ExecutionException {
         givenPreviousBuildSuccessful();
@@ -234,6 +225,15 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         givenTwoChangesInSubversionIn(MODIFIED_FILE_IN_MODULE_1);
         givenNextBuildWillBe(UNSTABLE);
         return whenBuilding();
+    }
+
+    private FreeStyleBuild whenFileChangedDuringBuilding(final String file) throws Exception, InterruptedException,
+            ExecutionException {
+        final Future<FreeStyleBuild> future = job.scheduleBuild2(1);
+        givenChangesInSubversionIn(file);
+        final FreeStyleBuild build = future.get();
+        printLogFor(build);
+        return build;
     }
 
     private void assertNothingRevertedSince(final long revisionNumber) throws Exception {
@@ -269,11 +269,13 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     private String logFor(final FreeStyleBuild build) throws IOException {
+        return build.getLog(LOG_LIMIT).toString();
+    }
+
+    private void printLogFor(final FreeStyleBuild build) throws IOException {
         final List<String> logLines = build.getLog(LOG_LIMIT);
         System.out.println("Build log: ");
         printLog(logLines);
-        final String log = logLines.toString();
-        return log;
     }
 
     private void printLog(final List<String> logLines) {
@@ -282,7 +284,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         }
     }
 
-    private FreeStyleBuild whenBuilding() throws Exception {
+    private FreeStyleBuild scheduleBuild() throws Exception {
         return job.scheduleBuild2(0).get();
     }
 
