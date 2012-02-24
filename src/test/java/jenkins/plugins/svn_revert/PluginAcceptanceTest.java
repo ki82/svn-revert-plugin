@@ -163,13 +163,13 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         rootScm = new SubversionSCM(repoUrl);
     }
 
-    private void givenChangesInSubversionIn(final String... file) throws Exception {
-        modifyAndCommit(file);
+    private void givenChangesInSubversionIn(final String... files) throws Exception {
+        modifyAndCommit(files);
     }
 
-    private void givenTwoChangesInSubversionIn(final String file) throws Exception {
-        modifyAndCommit(file);
-        modifyAndCommit(file);
+    private void givenTwoChangesInSubversionIn(final String... files) throws Exception {
+        modifyAndCommit(files);
+        modifyAndCommit(files);
     }
 
     private void givenJobWithTwoModulesInSameRepository() throws Exception, IOException {
