@@ -80,4 +80,11 @@ public class MessengerTest extends AbstractMockitoTestCase {
         messenger.informChangesOutsideWorkspace();
         verify(logger).println(Messenger.CHANGES_OUTSIDE_WORKSPACE);
     }
+
+    @Test
+    public void logsRevertFailed() throws Exception {
+        messenger.informRevertFailed(exception);
+        verify(logger).println(Messenger.SUBVERSION_ERROR_DURING_REVERT);
+        verify(exception).printStackTrace(logger);
+    }
 }

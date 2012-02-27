@@ -20,6 +20,8 @@ class Messenger {
             "but failed since files to revert are out of date.";
     static final String CHANGES_OUTSIDE_WORKSPACE =
             "Will not revert since some changes in commit(s) outside workspace detected.";
+    static final String SUBVERSION_ERROR_DURING_REVERT =
+            "Revert failed because of a Subversion error:";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
@@ -58,6 +60,11 @@ class Messenger {
         logger.println(CHANGES_OUTSIDE_WORKSPACE);
     }
 
+    void informRevertFailed(final Exception exception) {
+        logger.println(SUBVERSION_ERROR_DURING_REVERT);
+        printStackTraceFor(exception);
+    }
+
     void printStackTraceFor(final Exception exception) {
         exception.printStackTrace(logger);
     }
@@ -65,5 +72,6 @@ class Messenger {
     void log(final String string) {
         logger.println(string);
     }
+
 
 }

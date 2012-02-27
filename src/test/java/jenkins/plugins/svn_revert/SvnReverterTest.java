@@ -6,7 +6,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -177,13 +176,22 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void shouldNotLogRevertedWhenCommitFails() throws Exception {
+    public void shouldLogRevertFailedWhenCommitFails() throws Exception {
         givenAllRevertConditionsMet();
         doThrow(svnException).when(svnKitClient).commit(anyString(), any(File.class));
 
         reverter.revert(subversionScm);
 
-        verify(messenger, never()).informReverted(any(Revisions.class), anyString());
+        verify(messenger).informRevertFailed(svnException);
+        verifyNoMoreInteractions(messenger);
+    }
+
+    @Test
+    public void shouldReturnRevertFailedWhenCommitFails() throws Exception {
+        givenAllRevertConditionsMet();
+        doThrow(svnException).when(svnKitClient).commit(anyString(), any(File.class));
+
+        assertThat(reverter.revert(subversionScm), is(SvnRevertStatus.REVERT_FAILED));
     }
 
     @Test
