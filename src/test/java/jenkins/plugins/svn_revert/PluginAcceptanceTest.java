@@ -128,6 +128,19 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
     }
 
+    public void testWillNotRevertWhenFolderHasBeenRemovedSinceBuildStarted() throws Exception {
+        givenJobWithOneModule();
+        givenPreviousBuildSuccessful();
+        givenChangesInSubversionIn(MODULE_1 + File.separator + "folder" + File.separator + "file.txt");
+        givenNextBuildWillBe(UNSTABLE);
+
+        currentBuild = whenFileRemovedDuringBuilding(MODULE_1 + File.separator + "folder");
+
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertNothingRevertedSince(TWO_COMMITS);
+        assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
+    }
+
     public void testShouldNotRevertAnythingWhenFileToRevertHasChanged() throws Exception {
         givenJobWithTwoModulesInSameRepository();
         givenPreviousBuildSuccessful();
@@ -167,9 +180,13 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         modifyAndCommit(files);
     }
 
-    private void givenTwoChangesInSubversionIn(final String... files) throws Exception {
+    private void givenTwoChangesInSubversionIn(final String files) throws Exception {
         modifyAndCommit(files);
         modifyAndCommit(files);
+    }
+
+    private void givenFileRemovedInSubversion(final String... files) throws Exception {
+        removeAndCommit(files);
     }
 
     private void givenJobWithTwoModulesInSameRepository() throws Exception, IOException {
@@ -229,8 +246,23 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
     private FreeStyleBuild whenFileChangedDuringBuilding(final String file) throws Exception, InterruptedException,
             ExecutionException {
-        final Future<FreeStyleBuild> future = job.scheduleBuild2(1);
+        slowDown(job);
+        final Future<FreeStyleBuild> future = job.scheduleBuild2(0);
         givenChangesInSubversionIn(file);
+        final FreeStyleBuild build = future.get();
+        printLogFor(build);
+        return build;
+    }
+
+    private void slowDown(final FreeStyleProject job) throws IOException {
+        job.getPublishersList().add(new SlowDown());
+    }
+
+    private FreeStyleBuild whenFileRemovedDuringBuilding(final String... files) throws Exception, InterruptedException,
+    ExecutionException {
+        slowDown(job);
+        final Future<FreeStyleBuild> future = job.scheduleBuild2(0);
+        givenFileRemovedInSubversion(files);
         final FreeStyleBuild build = future.get();
         printLogFor(build);
         return build;
@@ -244,7 +276,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     private void assertFileReverted(final String path)
             throws IOException, InterruptedException, ExecutionException, Exception {
 
-        final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
+        final FreeStyleBuild build = getIndependentSubversionBuild("assert-file-reverted", rootScm);
         final FilePath file = build.getWorkspace().child(path);
         assertFalse("File '" + path + "' is not reverted (because it exists)", file.exists());
         assertLogContains(EMAIL_SENT, currentBuild);
@@ -289,15 +321,23 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     private void modifyAndCommit(final String... paths) throws Exception {
-        final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
+        final FreeStyleBuild build = getIndependentSubversionBuild("modify-and-commit", rootScm);
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
 
         final List<File> filesToCommit = Lists.newArrayList();
         for (final String path : paths) {
             final FilePath file = build.getWorkspace().child(path);
             if (!file.exists()) {
+                final File realFile = new File(file.getRemote());
+                final File parent = realFile.getParentFile();
+                if (!parent.exists()) {
+                    parent.mkdirs();
+                    svnm.getWCClient().doAdd(parent, false, false, false,
+                            SVNDepth.INFINITY, false, false);
+                    filesToCommit.add(parent);
+                }
                 file.touch(System.currentTimeMillis());
-                svnm.getWCClient().doAdd(new File(file.getRemote()), false, false, false,
+                svnm.getWCClient().doAdd(realFile, false, false, false,
                         SVNDepth.INFINITY, false, false);
             } else {
                 file.write("random content", "UTF-8");
@@ -309,9 +349,29 @@ public class PluginAcceptanceTest extends HudsonTestCase {
                 "test changes", null, null, false, false, SVNDepth.EMPTY);
     }
 
-    private FreeStyleBuild getIndependentSubversionBuild(final SubversionSCM scm) throws IOException,
+    private void removeAndCommit(final String... paths) throws Exception {
+        final FreeStyleBuild build = getIndependentSubversionBuild("remove-and-commit", rootScm);
+        final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
+
+        final List<File> filesToCommit = Lists.newArrayList();
+        for (final String path : paths) {
+            final FilePath file = build.getWorkspace().child(path);
+            if (file.exists()) {
+                file.touch(System.currentTimeMillis());
+                svnm.getWCClient().doDelete(new File(file.getRemote()), true, true, false);
+            } else {
+                throw new IllegalStateException("Can not delete file that does not exist");
+            }
+            filesToCommit.add(new File(file.getRemote()));
+        }
+
+        svnm.getCommitClient().doCommit(filesToCommit.toArray(new File[0]), false,
+                "test changes", null, null, false, false, SVNDepth.INFINITY);
+    }
+
+    private FreeStyleBuild getIndependentSubversionBuild(final String jobName, final SubversionSCM scm) throws IOException,
             Exception, InterruptedException, ExecutionException {
-        final FreeStyleProject forCommit = createFreeStyleProject();
+        final FreeStyleProject forCommit = createFreeStyleProject(jobName);
         forCommit.setScm(scm);
         forCommit.setAssignedLabel(hudson.getSelfLabel());
         final FreeStyleBuild build = assertBuildStatusSuccess(forCommit.scheduleBuild2(0).get());
@@ -320,7 +380,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
     private long getHeadSvnRevision() throws Exception {
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
-        final FreeStyleBuild build = getIndependentSubversionBuild(rootScm);
+        final FreeStyleBuild build = getIndependentSubversionBuild("get-head-revision", rootScm);
         final File workspace = new File(build.getWorkspace().getRemote());
         final SVNStatus status = svnm.getStatusClient().doStatus(workspace, true);
         return status.getRevision().getNumber();
