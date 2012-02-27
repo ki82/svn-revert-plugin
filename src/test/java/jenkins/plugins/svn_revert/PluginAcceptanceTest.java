@@ -388,7 +388,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     private String getUniqueBuildName(final String buildName) {
-        return buildName + " #" + jobCounter++;
+        return buildName + "-" + jobCounter++;
     }
 
 }
