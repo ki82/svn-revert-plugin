@@ -51,6 +51,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     private SubversionSCM scm;
     private SubversionSCM rootScm;
     private FreeStyleBuild currentBuild;
+    private int jobCounter = 0;
 
     @Override
     protected void setUp() throws Exception {
@@ -321,7 +322,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     private void modifyAndCommit(final String... paths) throws Exception {
-        final FreeStyleBuild build = getIndependentSubversionBuild("modify-and-commit", rootScm);
+        final FreeStyleBuild build = getIndependentSubversionBuild(getUniqueBuildName("modify-and-commit"), rootScm);
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
 
         final List<File> filesToCommit = Lists.newArrayList();
@@ -350,7 +351,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     private void removeAndCommit(final String... paths) throws Exception {
-        final FreeStyleBuild build = getIndependentSubversionBuild("remove-and-commit", rootScm);
+        final FreeStyleBuild build = getIndependentSubversionBuild(getUniqueBuildName("remove-and-commit"), rootScm);
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
 
         final List<File> filesToCommit = Lists.newArrayList();
@@ -380,10 +381,14 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
     private long getHeadSvnRevision() throws Exception {
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
-        final FreeStyleBuild build = getIndependentSubversionBuild("get-head-revision", rootScm);
+        final FreeStyleBuild build = getIndependentSubversionBuild(getUniqueBuildName("get-head-revision"), rootScm);
         final File workspace = new File(build.getWorkspace().getRemote());
         final SVNStatus status = svnm.getStatusClient().doStatus(workspace, true);
         return status.getRevision().getNumber();
+    }
+
+    private String getUniqueBuildName(final String buildName) {
+        return buildName + " #" + jobCounter++;
     }
 
 }
