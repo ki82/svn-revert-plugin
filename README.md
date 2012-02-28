@@ -9,6 +9,10 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 Change Log
 ----------
+### 0.7
+
+- No longer failing build if revert failed.
+
 ### v0.6 (22 Feb 2012)
 
 - Only reverting changes if all changes in the commit are in the workspace checked out by Jenkins.
