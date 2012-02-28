@@ -9,6 +9,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 
+@SuppressWarnings({ "deprecation", "rawtypes" })
 public class SlowDown extends Publisher {
 
 
