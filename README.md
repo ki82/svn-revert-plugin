@@ -9,7 +9,7 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 Change Log
 ----------
-### 0.7
+### 0.7 (28 Feb 2012)
 
 - No longer failing build if revert failed.
 
