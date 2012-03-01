@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 class SvnReverter {
 
     static final String REVERT_MESSAGE =
-            "Automatically reverted revision(s) %s since Jenkins build became UNSTABLE.";
+            "Automatically reverted revision(s) %s since Jenkins build %s became UNSTABLE.";
     private final Messenger messenger;
     private final AbstractBuild<?, ?> build;
     private SvnKitClient svnKitClient;
@@ -68,7 +68,7 @@ class SvnReverter {
             moduleDirs.add(moduleDir);
         }
 
-        if (svnKitClient.commit(getRevertMessageFor(revisions), moduleDirs.toArray(new File[0]))) {
+        if (svnKitClient.commit(getRevertMessageFor(revisions, rootProject), moduleDirs.toArray(new File[0]))) {
             informReverted(revisions, modules);
         } else {
             messenger.informFilesToRevertOutOfDate();
@@ -78,8 +78,8 @@ class SvnReverter {
         return SvnRevertStatus.REVERT_SUCCESSFUL;
     }
 
-    private String getRevertMessageFor(final Revisions revisions) {
-        return String.format(REVERT_MESSAGE, revisions.getAllInOrderAsString());
+    private String getRevertMessageFor(final Revisions revisions, final AbstractProject<?, ?> rootProject) {
+        return String.format(REVERT_MESSAGE, revisions.getAllInOrderAsString(), rootProject.getName());
     }
 
     private void informReverted(final Revisions revisions, final List<Module> modules) {

@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 @SuppressWarnings("rawtypes")
 public class SvnReverterTest extends AbstractMockitoTestCase {
 
+    private static final String JOB_NAME = "job-name";
     private static final String LOCAL_REPO = "local" + File.separator;
     private static final String LOCAL_REPO_2 = "local2" + File.separator;
     private static final String REMOTE_REPO = "remote";
@@ -84,6 +85,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         when(build.getRootBuild()).thenReturn(rootBuild);
         when(build.getProject()).thenReturn(project);
         when(project.getRootProject()).thenReturn(rootProject);
+        when(rootProject.getName()).thenReturn(JOB_NAME);
         when(svnKitClient.commit(anyString(), any(File.class))).thenReturn(true);
         when(svnKitClient.commit(anyString(), any(File.class), any(File.class))).thenReturn(true);
         when(locationFinder.getModules(subversionScm)).thenReturn(modules);
@@ -260,7 +262,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     }
 
     private String buildCommitMessage() {
-        return String.format(SvnReverter.REVERT_MESSAGE, Revisions.create(FIRST_CHANGE).getAllInOrderAsString());
+        return String.format(SvnReverter.REVERT_MESSAGE, Revisions.create(FIRST_CHANGE).getAllInOrderAsString(), JOB_NAME);
     }
 
 }
