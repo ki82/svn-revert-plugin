@@ -44,8 +44,8 @@ class SvnReverter {
             messenger.informNoSvnAuthProvider();
             return SvnRevertStatus.REVERT_FAILED;
         } catch (final SVNException e) {
-            messenger.informRevertFailed(e);
-            return SvnRevertStatus.REVERT_FAILED;
+            messenger.informNothingRevertedBecauseOf(e);
+            return SvnRevertStatus.NOTHING_REVERTED;
         } catch (final Exception e) {
             messenger.printStackTraceFor(e);
             return SvnRevertStatus.REVERT_FAILED;

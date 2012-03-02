@@ -184,7 +184,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
 
         reverter.revert(subversionScm);
 
-        verify(messenger).informRevertFailed(svnException);
+        verify(messenger).informNothingRevertedBecauseOf(svnException);
         verifyNoMoreInteractions(messenger);
     }
 
@@ -193,7 +193,7 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
         givenAllRevertConditionsMet();
         doThrow(svnException).when(svnKitClient).commit(anyString(), any(File.class));
 
-        assertThat(reverter.revert(subversionScm), is(SvnRevertStatus.REVERT_FAILED));
+        assertThat(reverter.revert(subversionScm), is(SvnRevertStatus.NOTHING_REVERTED));
     }
 
     @Test

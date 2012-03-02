@@ -82,9 +82,9 @@ public class MessengerTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void logsRevertFailed() throws Exception {
-        messenger.informRevertFailed(exception);
-        verify(logger).println(Messenger.SUBVERSION_ERROR_DURING_REVERT);
+    public void logsNothingRevertedBecauseOfSvnException() throws Exception {
+        messenger.informNothingRevertedBecauseOf(exception);
+        verify(logger).println(Messenger.SUBVERSION_EXCEPTION_DURING_REVERT);
         verify(exception).printStackTrace(logger);
     }
 }
