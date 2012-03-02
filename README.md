@@ -12,10 +12,11 @@ Change Log
 ### 0.8
 
 - Job name is now included in revert commit message.
+- Fixed an issue where builds would fail when revert failed.
 
 ### 0.7 (28 Feb 2012)
 
-- No longer failing build if revert failed.
+- ~~No longer failing build if revert failed.~~
 
 ### v0.6 (22 Feb 2012)
 
