@@ -9,7 +9,7 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 Change Log
 ----------
-### 0.8
+### 0.8 (2 Mar 2012)
 
 - Job name is now included in revert commit message.
 - Fixed an issue where builds would fail when revert failed.
