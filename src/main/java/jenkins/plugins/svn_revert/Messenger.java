@@ -2,6 +2,9 @@ package jenkins.plugins.svn_revert;
 
 import java.io.PrintStream;
 
+import org.tmatesoft.svn.core.SVNErrorMessage;
+import org.tmatesoft.svn.core.SVNException;
+
 class Messenger {
 
     static final String BUILD_STATUS_NOT_UNSTABLE =
@@ -22,6 +25,7 @@ class Messenger {
             "Will not revert since some changes in commit(s) outside workspace detected.";
     static final String SUBVERSION_EXCEPTION_DURING_REVERT =
             "Revert failed because of a Subversion error:";
+    static final String SUBVERSION_ERROR_CODE = "Subversion Error Code: ";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
@@ -60,8 +64,9 @@ class Messenger {
         logger.println(CHANGES_OUTSIDE_WORKSPACE);
     }
 
-    void informNothingRevertedBecauseOf(final Exception exception) {
+    void informNothingRevertedBecauseOf(final SVNException exception) {
         logger.println(SUBVERSION_EXCEPTION_DURING_REVERT);
+        logger.println(SUBVERSION_ERROR_CODE + exception.getErrorMessage().getErrorCode());
         printStackTraceFor(exception);
     }
 
