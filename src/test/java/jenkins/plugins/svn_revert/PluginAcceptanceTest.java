@@ -9,6 +9,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
+import hudson.model.Node;
 import hudson.scm.NullSCM;
 import hudson.scm.SubversionSCM;
 
@@ -167,6 +168,20 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         assertNothingRevertedSince(ONE_COMMIT);
         assertBuildStatus(UNSTABLE, currentBuild);
         assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
+    }
+
+    public void testShouldBePossibleToRevertOnSlaveMachine() throws Exception {
+        givenJobWithOneModule();
+
+        final Node slave = createSlave("slave-node", null, null);
+        job.setAssignedNode(slave);
+
+        currentBuild = whenPreviousJobSuccessfulAndCurrentUnstable();
+
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
+        assertLogContains(svnUrl, currentBuild);
+        assertLogContains(ONE_REVERTED_REVISION, currentBuild);
     }
 
     private void givenSubversionScmWithOneModule() throws Exception {
