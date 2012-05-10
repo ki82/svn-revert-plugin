@@ -1,20 +1,29 @@
 package jenkins.plugins.svn_revert;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.PrintStream;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.tmatesoft.svn.core.SVNErrorCode;
+import org.tmatesoft.svn.core.SVNErrorMessage;
+import org.tmatesoft.svn.core.SVNException;
 
 public class MessengerTest extends AbstractMockitoTestCase {
 
+    private static final SVNErrorCode ERROR_CODE = SVNErrorCode.UNKNOWN;
     @Mock
     private PrintStream logger;
     @Mock
     private Exception exception;
     private Messenger messenger;
+    @Mock
+    private SVNException svnException;
+    @Mock
+    private SVNErrorMessage errorMessage;
 
     @Before
     public void setup() {
@@ -82,9 +91,12 @@ public class MessengerTest extends AbstractMockitoTestCase {
     }
 
     @Test
-    public void logsNothingRevertedBecauseOfSvnException() throws Exception {
-        messenger.informNothingRevertedBecauseOf(exception);
+    public void logsNothingRevertedBecauseOfSvnExcepttion() throws Exception {
+        when(svnException.getErrorMessage()).thenReturn(errorMessage);
+        when(errorMessage.getErrorCode()).thenReturn(ERROR_CODE);
+        messenger.informNothingRevertedBecauseOf(svnException);
         verify(logger).println(Messenger.SUBVERSION_EXCEPTION_DURING_REVERT);
-        verify(exception).printStackTrace(logger);
+        verify(logger).println(Messenger.SUBVERSION_ERROR_CODE + ERROR_CODE);
+        verify(svnException).printStackTrace(logger);
     }
 }
