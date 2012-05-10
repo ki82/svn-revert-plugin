@@ -8,7 +8,7 @@
     <artifactId>plugin</artifactId>
     <version>1.444</version>
   </parent>
-  <name>Jenkins Subversion Revert Plugin</name>
+  <name>Subversion Revert Plugin</name>
   <scm>
     <url>http://github.com/jenkinsci/svn-revert-plugin</url>
     <connection>scm:git:git://github.com/jenkinsci/svn-revert-plugin.git</connection>
