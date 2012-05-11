@@ -20,6 +20,18 @@
       <url>http://maven.glassfish.org/content/groups/public/</url>
     </repository>
   </repositories>
+  <developers>
+    <developer>
+      <id>ki82</id>
+      <name>Christian Åkerström</name>
+      <email>akerstrom.christian@gmail.com</email>
+    </developer>
+    <developer>
+      <id>davidparsson</id>
+      <name>David Pärsson</name>
+      <email>david.parsson@gmail.com</email>
+    </developer>
+  </developers>
   <build>
     <pluginManagement>
       <plugins>
