@@ -9,6 +9,9 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 Change Log
 ----------
+### 1.0 (11 May 2012)
+- Public release. No major changes.
+
 ### 0.8 (2 Mar 2012)
 
 - Job name is now included in revert commit message.
