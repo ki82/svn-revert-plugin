@@ -155,7 +155,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
         assertNothingRevertedSince(TWO_COMMITS);
         assertBuildStatus(UNSTABLE, currentBuild);
-        assertLogNotContains(TWO_REVERTED_REVISIONS, currentBuild);
+        assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
     }
 
     public void testShouldNotRevertAnythingWhenWorkspaceOnlyContainsPartsOfCommit()
@@ -298,7 +298,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     private void assertFileReverted(final String path)
             throws IOException, InterruptedException, ExecutionException, Exception {
 
-        final FreeStyleBuild build = getIndependentSubversionBuild("assert-file-reverted", rootScm);
+        final FreeStyleBuild build = getIndependentSubversionBuild(getUniqueBuildName("assert-file-reverted"), rootScm);
         final FilePath file = build.getWorkspace().child(path);
         assertFalse("File '" + path + "' is not reverted (because it exists)", file.exists());
         assertLogContains(EMAIL_SENT, currentBuild);
