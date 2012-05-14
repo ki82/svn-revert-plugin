@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -262,26 +263,30 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
     private FreeStyleBuild whenFileChangedDuringBuilding(final String file) throws Exception, InterruptedException,
             ExecutionException {
-        slowDown(job);
+        final Semaphore semaphore = blockExecutionOf(job);
         final Future<FreeStyleBuild> future = job.scheduleBuild2(0);
         givenChangesInSubversionIn(file);
+        semaphore.release();
         final FreeStyleBuild build = future.get();
         printLogFor(build);
         return build;
-    }
-
-    private void slowDown(final FreeStyleProject job) throws IOException {
-        job.getPublishersList().add(new SlowDown());
     }
 
     private FreeStyleBuild whenFileRemovedDuringBuilding(final String... files) throws Exception, InterruptedException,
     ExecutionException {
-        slowDown(job);
+        final Semaphore semaphore = blockExecutionOf(job);
         final Future<FreeStyleBuild> future = job.scheduleBuild2(0);
+        semaphore.release();
         givenFileRemovedInSubversion(files);
         final FreeStyleBuild build = future.get();
         printLogFor(build);
         return build;
+    }
+
+    private Semaphore blockExecutionOf(final FreeStyleProject job) throws IOException {
+        final Semaphore semaphore = new Semaphore(0);
+        job.getBuildWrappersList().add(new SlowDown(semaphore));
+        return semaphore;
     }
 
     private void assertNothingRevertedSince(final long revisionNumber) throws Exception {
