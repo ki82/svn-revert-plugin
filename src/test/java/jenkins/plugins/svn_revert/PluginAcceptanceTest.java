@@ -47,6 +47,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
             MODULE_1 + File.separator + MODIFIED_FILE;
     private static final String MODIFIED_FILE_IN_MODULE_2 =
             MODULE_2 + File.separator + MODIFIED_FILE;
+    private static final String FOLDER_IN_MODULE_1 = MODULE_1 + File.separator + "folder";
     private static final int LOG_LIMIT = 1000;
     private FreeStyleProject job;
     private String svnUrl;
@@ -134,10 +135,10 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     public void testWillNotRevertWhenFolderHasBeenRemovedSinceBuildStarted() throws Exception {
         givenJobWithOneModule();
         givenPreviousBuildSuccessful();
-        givenChangesInSubversionIn(MODULE_1 + File.separator + "folder" + File.separator + "file.txt");
+        givenChangesInSubversionIn(FOLDER_IN_MODULE_1 + File.separator + "file.txt");
         givenNextBuildWillBe(UNSTABLE);
 
-        currentBuild = whenFileRemovedDuringBuilding(MODULE_1 + File.separator + "folder");
+        currentBuild = whenFileRemovedDuringBuilding(FOLDER_IN_MODULE_1);
 
         assertBuildStatus(UNSTABLE, currentBuild);
         assertNothingRevertedSince(TWO_COMMITS);
