@@ -10,17 +10,16 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings({ "rawtypes" })
-public class SlowDown extends BuildWrapper {
-
+public class BuildBlocker extends BuildWrapper {
 
     private final Semaphore semaphore;
-    private final boolean waitFailed = false;
 
-    public SlowDown(final Semaphore semaphore) {
+    public BuildBlocker(final Semaphore semaphore) {
         this.semaphore = semaphore;
     }
 
@@ -32,12 +31,15 @@ public class SlowDown extends BuildWrapper {
     @Override
     public Environment setUp(final AbstractBuild build, final Launcher launcher,
             final BuildListener listener) throws IOException, InterruptedException {
+        final PrintStream logger = listener.getLogger();
+        logger.println("Waiting until semaphore released...");
         try {
             if (!semaphore.tryAcquire(10L, TimeUnit.SECONDS)) {
                 fail("Unable to complete build. Blocked because test semaphore never released.");
             }
         } catch (final InterruptedException e) {
         }
+        logger.println("Done.");
         return new Environment() {
         };
     }

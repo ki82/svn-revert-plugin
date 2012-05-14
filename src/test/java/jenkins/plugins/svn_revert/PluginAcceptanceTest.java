@@ -286,7 +286,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
     private Semaphore blockExecutionOf(final FreeStyleProject job) throws IOException {
         final Semaphore semaphore = new Semaphore(0);
-        job.getBuildWrappersList().add(new SlowDown(semaphore));
+        job.getBuildWrappersList().add(new BuildBlocker(semaphore));
         return semaphore;
     }
 
