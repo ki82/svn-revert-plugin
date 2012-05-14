@@ -1,7 +1,10 @@
 package jenkins.plugins.svn_revert;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -20,8 +23,10 @@ final class Revisions {
     }
 
     static Revisions create(final List<Integer> listOfRevisions) {
-        Collections.sort(listOfRevisions);
-        return new Revisions(listOfRevisions);
+        final Set<Integer> setOfRevisions = new HashSet<Integer>(listOfRevisions);
+        final List<Integer> listOfUniqueRevisions = new ArrayList<Integer>(setOfRevisions);
+        Collections.sort(listOfUniqueRevisions);
+        return new Revisions(listOfUniqueRevisions);
     }
 
     int getLast() {
@@ -36,12 +41,12 @@ final class Revisions {
         return getFirst() - 1;
     }
 
-    List<Integer> getAllInOrder() {
-        return listOfRevisions;
-    }
-
     String getAllInOrderAsString() {
         return StringUtils.join(getAllInOrder(), ", ");
+    }
+
+    private List<Integer> getAllInOrder() {
+        return listOfRevisions;
     }
 
     @Override
