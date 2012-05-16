@@ -20,7 +20,9 @@ class Claimer {
     }
 
     private String getClaimMessageFor(final AbstractBuild<?, ?> build) {
-        return "Reverted revision(s) " + changedRevisions.getRevisions().getAllInOrderAsString();
+        final Revisions revisions = changedRevisions.getRevisions();
+        String message = "Reverted revision(s) " + revisions.getAllInOrderAsString();
+        return StringHumanizer.pluralize(message, revisions.count());
     }
 
 }

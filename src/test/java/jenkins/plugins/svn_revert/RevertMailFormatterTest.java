@@ -46,14 +46,14 @@ public class RevertMailFormatterTest extends AbstractMockitoTestCase {
     @Test
     public void shouldSetDescriptiveSubject() throws Exception {
         mail = mailer.format(mail, build, JENKINS_URL);
-        verify(mail).setSubject("Reverted revision(s): 123, 124");
+        verify(mail).setSubject("Reverted revisions: 123, 124");
     }
 
     @Test
     public void shouldSetDescriptiveText() throws Exception {
         mail = mailer.format(mail, build, JENKINS_URL);
         verify(mail).setText(
-                "Revision(s) 123, 124 was reverted since they made job-name UNSTABLE." + LINE_BREAK
+                "Revisions 123, 124 was reverted since they made job-name UNSTABLE." + LINE_BREAK
                 + LINE_BREAK
                 + "See: " + JENKINS_URL + BUILD_URL);
     }

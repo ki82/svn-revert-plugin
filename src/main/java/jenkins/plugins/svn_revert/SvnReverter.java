@@ -79,7 +79,8 @@ class SvnReverter {
     }
 
     private String getRevertMessageFor(final Revisions revisions, final AbstractProject<?, ?> rootProject) {
-        return String.format(REVERT_MESSAGE, revisions.getAllInOrderAsString(), rootProject.getName());
+        final String revertMessage = StringHumanizer.pluralize(REVERT_MESSAGE, revisions.count());
+        return String.format(revertMessage, revisions.getAllInOrderAsString(), rootProject.getName());
     }
 
     private void informReverted(final Revisions revisions, final List<Module> modules) {

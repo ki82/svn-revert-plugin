@@ -9,6 +9,11 @@ It currently only works for jobs with a **single module**, or with multiple modu
 
 Change Log
 ----------
+
+### 1.1
+
+- Plurilization in messages.
+
 ### 1.0 (11 May 2012)
 
 - Job name is now included in revert commit message.

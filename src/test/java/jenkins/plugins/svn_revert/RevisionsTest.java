@@ -40,4 +40,9 @@ public class RevisionsTest {
     public void removesDuplicatesWhenConvertingToString() throws Exception {
         assertThat(revisions.getAllInOrderAsString(), equalTo("2, 3, 5"));
     }
+
+    @Test
+    public void getsNumberOfUniqueRevisions() throws Exception {
+        assertThat(revisions.count(), equalTo(3));
+    }
 }

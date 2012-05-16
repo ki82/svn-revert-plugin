@@ -76,4 +76,8 @@ final class Revisions {
         return "Revisions, <" + getAllInOrderAsString() + ">";
     }
 
+    public int count() {
+        return listOfRevisions.size();
+    }
+
 }

@@ -262,7 +262,9 @@ public class SvnReverterTest extends AbstractMockitoTestCase {
     }
 
     private String buildCommitMessage() {
-        return String.format(SvnReverter.REVERT_MESSAGE, Revisions.create(FIRST_CHANGE).getAllInOrderAsString(), JOB_NAME);
+        return String.format(SvnReverter.REVERT_MESSAGE.replace("(s)", ""),
+                Revisions.create(FIRST_CHANGE).getAllInOrderAsString(),
+                JOB_NAME);
     }
 
 }

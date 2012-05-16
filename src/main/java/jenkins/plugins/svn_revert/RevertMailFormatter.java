@@ -7,6 +7,9 @@ import javax.mail.internet.MimeMessage;
 
 class RevertMailFormatter {
 
+    private static final String MAIL_SUBJECT = "Reverted revision(s): %s";
+    private static final String MAIL_BODY =
+            "Revision(s) %s was reverted since they made %s UNSTABLE.\n\nSee: %s";
     private final ChangedRevisions changedRevisions;
 
     RevertMailFormatter(final ChangedRevisions changedRevisions) {
@@ -16,13 +19,16 @@ class RevertMailFormatter {
     public MimeMessage format(final MimeMessage mail, final AbstractBuild<?, ?> build,
             final String jenkinsUrl)
             throws MessagingException {
-        final String revisions = changedRevisions.getRevisions().getAllInOrderAsString();
-        mail.setSubject(String.format("Reverted revision(s): %s", revisions));
+        final Revisions revisions = changedRevisions.getRevisions();
+
+        final String revisionsInText = revisions.getAllInOrderAsString();
+        final String subject = StringHumanizer.pluralize(MAIL_SUBJECT, revisions.count());
+        mail.setSubject(String.format(subject, revisionsInText));
+
         final String jobName = build.getProject().getRootProject().getName();
-        mail.setText(String.format(
-                "Revision(s) %s was reverted since they made %s UNSTABLE.\n\n" +
-                        "See: %s",
-                revisions, jobName,  jenkinsUrl + build.getUrl()));
+        final String body = StringHumanizer.pluralize(MAIL_BODY, revisions.count());
+        mail.setText(String.format(body, revisionsInText, jobName,  jenkinsUrl + build.getUrl()));
+
         return mail;
     }
 
