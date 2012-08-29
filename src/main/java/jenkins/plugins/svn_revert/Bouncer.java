@@ -10,9 +10,11 @@ import java.io.IOException;
 
 class Bouncer {
 
+    private static final String REVERT = "revert";
+
     static boolean throwOutIfUnstable(final AbstractBuild<?, ?> build, final Launcher launcher,
             final Messenger messenger, final SvnReverter svnReverter, final Claimer claimer,
-            final ChangeLocator changeLocator, final RevertMailSender mailer) throws InterruptedException, IOException {
+            final ChangeLocator changeLocator, final CommitMessages commitMessages, final RevertMailSender mailer) throws InterruptedException, IOException {
 
         if (isNotSubversionJob(build)) {
             messenger.informNotSubversionSCM();
@@ -28,6 +30,10 @@ class Bouncer {
         }
         if (noChangesIn(build)) {
             messenger.informNoChanges();
+            return true;
+        }
+        if (commitMessages.anyMessageContains(REVERT)) {
+            messenger.informCommitMessageContains(REVERT);
             return true;
         }
         final SubversionSCM subversionScm = getSubversionScm(build);

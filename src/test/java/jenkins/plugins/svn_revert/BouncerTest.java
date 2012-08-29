@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 @SuppressWarnings("rawtypes")
 public class BouncerTest extends AbstractMockitoTestCase {
 
+    private static final String REVERT = "revert";
     private static final Result NOT_SUCCESS = Result.UNSTABLE;
     private static final Result NOT_UNSTABLE = Result.SUCCESS;
     @Mock
@@ -56,6 +57,8 @@ public class BouncerTest extends AbstractMockitoTestCase {
     private RevertMailSender mailer;
     @Mock
     private ChangeLocator changeLocator;
+    @Mock
+    private CommitMessages commitMessages;
 
     private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
     private EntryImpl entry;
@@ -135,6 +138,15 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     @Test
+    public void shouldNotRevertWhenCommitMessageContainsRevert() throws Exception {
+        givenCommitMessageContainsRevert();
+
+        throwOutIfUnstable();
+
+        verifyNotReverted();
+    }
+
+    @Test
     public void shouldLogIfRepoIsNotSubversion() throws Exception {
         givenNotSubversionScm();
         throwOutIfUnstable();
@@ -178,6 +190,16 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     @Test
+    public void shouldLogWhenCommitMessageContainsRevert() throws Exception {
+        givenCommitMessageContainsRevert();
+
+        throwOutIfUnstable();
+
+        verify(messenger).informCommitMessageContains(REVERT);
+
+    }
+
+    @Test
     public void shouldReturnTrueIfRepoIsNotSubversion() throws Exception {
         givenNotSubversionScm();
         assertThat(throwOutIfUnstable(), is(true));
@@ -193,6 +215,13 @@ public class BouncerTest extends AbstractMockitoTestCase {
     @Test
     public void shouldReturnTrueWhenPreviousBuildResultIsNotSuccess() throws Exception {
         when(previousBuild.getResult()).thenReturn(NOT_SUCCESS);
+
+        assertThat(throwOutIfUnstable(), is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueWhenCommitMessageContainsRevert() throws Exception {
+        givenCommitMessageContainsRevert();
 
         assertThat(throwOutIfUnstable(), is(true));
     }
@@ -257,7 +286,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     private boolean throwOutIfUnstable() throws Exception {
-        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, changeLocator, mailer);
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, changeLocator, commitMessages, mailer);
     }
 
     private void givenNotSubversionScm() {
@@ -270,6 +299,10 @@ public class BouncerTest extends AbstractMockitoTestCase {
         entryList = Lists.newLinkedList();
         entryList.add(entry);
         when(build.getChangeSet()).thenReturn(new FakeChangeLogSet(build, entryList));
+    }
+
+    private void givenCommitMessageContainsRevert() {
+        when(commitMessages.anyMessageContains(REVERT)).thenReturn(true);
     }
 
     private void verifyNotReverted() {

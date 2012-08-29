@@ -2,7 +2,6 @@ package jenkins.plugins.svn_revert;
 
 import java.io.PrintStream;
 
-import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
 
 class Messenger {
@@ -26,6 +25,8 @@ class Messenger {
     static final String SUBVERSION_EXCEPTION_DURING_REVERT =
             "Revert failed because of a Subversion error:";
     static final String SUBVERSION_ERROR_CODE = "Subversion Error Code: ";
+    public static final String COMMIT_MESSAGE_CONTAINS =
+            "Will not revert since commit message contains '%s'.";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
@@ -54,6 +55,10 @@ class Messenger {
 
     void informNoChanges() {
         logger.println(NO_CHANGES);
+    }
+
+    void informCommitMessageContains(final String substring) {
+        logger.format(COMMIT_MESSAGE_CONTAINS, substring);
     }
 
     void informFilesToRevertOutOfDate() {

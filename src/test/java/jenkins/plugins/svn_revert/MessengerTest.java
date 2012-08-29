@@ -99,4 +99,10 @@ public class MessengerTest extends AbstractMockitoTestCase {
         verify(logger).println(Messenger.SUBVERSION_ERROR_CODE + ERROR_CODE);
         verify(svnException).printStackTrace(logger);
     }
+
+    @Test
+    public void logsNothingRevertedBecausCommitMessageContainsSubstring() throws Exception {
+        messenger.informCommitMessageContains("substring");
+        verify(logger).format(Messenger.COMMIT_MESSAGE_CONTAINS, "substring");
+    }
 }

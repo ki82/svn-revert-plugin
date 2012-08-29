@@ -158,6 +158,19 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
     }
 
+    public void testShouldNotRevertAnythingWhenCommitMessageContainsRevert() throws Exception {
+        givenJobWithOneModule();
+        givenPreviousBuildSuccessful();
+        givenChangesInSubversionWithMessageIn("Reverted something", MODIFIED_FILE_IN_MODULE_1);
+        givenNextBuildWillBe(UNSTABLE);
+
+        currentBuild = whenBuilding();
+
+        assertNothingRevertedSince(ONE_COMMIT);
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertLogNotContains(ONE_REVERTED_REVISION, currentBuild);
+    }
+
     public void testShouldNotRevertAnythingWhenWorkspaceOnlyContainsPartsOfCommit()
     throws Exception {
         givenJobWithOneModule();
@@ -196,6 +209,11 @@ public class PluginAcceptanceTest extends HudsonTestCase {
 
     private void givenChangesInSubversionIn(final String... files) throws Exception {
         modifyAndCommit(files);
+    }
+
+    private void givenChangesInSubversionWithMessageIn(final String commitMessage,
+            final String... files) throws Exception {
+        modifyAndCommitWithMessage(commitMessage, files);
     }
 
     private void givenTwoChangesInSubversionIn(final String files) throws Exception {
@@ -343,6 +361,11 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     private void modifyAndCommit(final String... paths) throws Exception {
+        modifyAndCommitWithMessage("test changes", paths);
+    }
+
+    private void modifyAndCommitWithMessage(final String commitMessage, final String... paths)
+            throws  Exception {
         final FreeStyleBuild build = getIndependentSubversionBuild(getUniqueBuildName("modify-and-commit"), rootScm);
         final SVNClientManager svnm = SubversionSCM.createSvnClientManager((AbstractProject) null);
 
@@ -368,7 +391,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         }
 
         svnm.getCommitClient().doCommit(filesToCommit.toArray(new File[0]), false,
-                "test changes", null, null, false, false, SVNDepth.EMPTY);
+                commitMessage, null, null, false, false, SVNDepth.EMPTY);
     }
 
     private void removeAndCommit(final String... paths) throws Exception {
