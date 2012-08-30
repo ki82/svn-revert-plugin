@@ -10,7 +10,7 @@ It currently only works for jobs with a **single module**, or with multiple modu
 Change Log
 ----------
 
-### 1.1
+### 1.1 (29 August 2012)
 
 - Builds with a commit having "revert" somewhere in the commit message will no longer revert anything.
 - Plurilization in messages.
