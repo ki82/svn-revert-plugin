@@ -12,6 +12,7 @@ Change Log
 
 ### 1.1
 
+- Builds with a commit having "revert" somewhere in the commit message will no longer revert anything.
 - Plurilization in messages.
 
 ### 1.0 (11 May 2012)
