@@ -57,7 +57,7 @@ public class JenkinsGlue extends Notifier {
 
         @Override
         public String getDisplayName() {
-            return "Revert commits that breaks the build";
+            return "Reverts commits that breaks the build";
         }
 
     }
