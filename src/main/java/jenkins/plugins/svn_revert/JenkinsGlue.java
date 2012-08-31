@@ -12,7 +12,10 @@ import hudson.tasks.Publisher;
 
 import java.io.IOException;
 
+import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class JenkinsGlue extends Notifier {
 
@@ -50,6 +53,20 @@ public class JenkinsGlue extends Notifier {
     @Extension
     public static final class SvnRevertDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
+        private boolean revertMultipleCommits;
+
+        public SvnRevertDescriptorImpl() {
+            revertMultipleCommits = false;
+            load();
+        }
+
+        @Override
+        public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
+            revertMultipleCommits = formData.containsKey("revertMultipleCommits");
+            save();
+            return super.configure(req, formData);
+        }
+
         @Override
         public boolean isApplicable(final Class<? extends AbstractProject> arg0) {
             return true;
@@ -58,6 +75,14 @@ public class JenkinsGlue extends Notifier {
         @Override
         public String getDisplayName() {
             return "Revert commits that breaks the build";
+        }
+
+        public boolean isRevertMultipleCommits() {
+            return revertMultipleCommits;
+        }
+
+        public void setRevertMultipleCommits(final boolean newValue) {
+            revertMultipleCommits = newValue;
         }
 
     }
