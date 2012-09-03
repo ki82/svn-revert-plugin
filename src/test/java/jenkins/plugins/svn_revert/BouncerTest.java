@@ -11,19 +11,12 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.scm.ChangeLogSet;
 import hudson.scm.NullSCM;
 import hudson.scm.SubversionSCM;
 
-import java.util.LinkedList;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hudson.test.FakeChangeLogSCM.EntryImpl;
-import org.jvnet.hudson.test.FakeChangeLogSCM.FakeChangeLogSet;
 import org.mockito.Mock;
-
-import com.google.common.collect.Lists;
 
 @SuppressWarnings("rawtypes")
 public class BouncerTest extends AbstractMockitoTestCase {
@@ -59,10 +52,8 @@ public class BouncerTest extends AbstractMockitoTestCase {
     private ChangeLocator changeLocator;
     @Mock
     private CommitMessages commitMessages;
-
-    private final ChangeLogSet emptyChangeSet = ChangeLogSet.createEmpty(build);
-    private EntryImpl entry;
-    private LinkedList<EntryImpl> entryList;
+    @Mock
+    private CommitCountRule commitCountRule;
 
     @Before
     public void setUp() throws Exception {
@@ -121,7 +112,7 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldNotRevertWhenNoChanges() throws Exception {
-        when(build.getChangeSet()).thenReturn(emptyChangeSet);
+        when(commitCountRule.noChangesInBuild()).thenReturn(true);
 
         throwOutIfUnstable();
 
@@ -140,6 +131,15 @@ public class BouncerTest extends AbstractMockitoTestCase {
     @Test
     public void shouldNotRevertWhenCommitMessageContainsRevert() throws Exception {
         givenCommitMessageContainsRevert();
+
+        throwOutIfUnstable();
+
+        verifyNotReverted();
+    }
+
+    @Test
+    public void shouldNotRevertWhenTooManyChanges() throws Exception {
+        when(commitCountRule.tooManyChangesInBuild()).thenReturn(true);
 
         throwOutIfUnstable();
 
@@ -173,11 +173,20 @@ public class BouncerTest extends AbstractMockitoTestCase {
 
     @Test
     public void shouldLogWhenNoChanges() throws Exception {
-        when(build.getChangeSet()).thenReturn(emptyChangeSet);
+        when(commitCountRule.noChangesInBuild()).thenReturn(true);
 
         throwOutIfUnstable();
 
         verify(messenger).informNoChanges();
+    }
+
+    @Test
+    public void shouldLogWhenTooManyChanges() throws Exception {
+        when(commitCountRule.tooManyChangesInBuild()).thenReturn(true);
+
+        throwOutIfUnstable();
+
+        verify(messenger).informTooManyChanges();
     }
 
     @Test
@@ -222,6 +231,13 @@ public class BouncerTest extends AbstractMockitoTestCase {
     @Test
     public void shouldReturnTrueWhenCommitMessageContainsRevert() throws Exception {
         givenCommitMessageContainsRevert();
+
+        assertThat(throwOutIfUnstable(), is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueWhenTooManyChanges() throws Exception {
+        when(commitCountRule.tooManyChangesInBuild()).thenReturn(true);
 
         assertThat(throwOutIfUnstable(), is(true));
     }
@@ -286,7 +302,8 @@ public class BouncerTest extends AbstractMockitoTestCase {
     }
 
     private boolean throwOutIfUnstable() throws Exception {
-        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer, changeLocator, commitMessages, mailer);
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, reverter, claimer,
+                changeLocator, commitMessages, mailer, commitCountRule);
     }
 
     private void givenNotSubversionScm() {
@@ -296,9 +313,6 @@ public class BouncerTest extends AbstractMockitoTestCase {
     private void givenMayRevert() {
         when(build.getResult()).thenReturn(Result.UNSTABLE);
         when(previousBuild.getResult()).thenReturn(Result.SUCCESS);
-        entryList = Lists.newLinkedList();
-        entryList.add(entry);
-        when(build.getChangeSet()).thenReturn(new FakeChangeLogSet(build, entryList));
     }
 
     private void givenCommitMessageContainsRevert() {

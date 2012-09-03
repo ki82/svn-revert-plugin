@@ -27,6 +27,8 @@ class Messenger {
     static final String SUBVERSION_ERROR_CODE = "Subversion Error Code: ";
     public static final String COMMIT_MESSAGE_CONTAINS =
             "Will not revert since commit message contains '%s'.";
+    public static final String TOO_MANY_CHANGES =
+            "Will not revert multiple commits!";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
@@ -81,6 +83,10 @@ class Messenger {
 
     void log(final String string) {
         logger.println(string);
+    }
+
+    public void informTooManyChanges() {
+        logger.println(TOO_MANY_CHANGES);
     }
 
 

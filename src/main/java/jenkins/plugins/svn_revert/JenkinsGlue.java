@@ -47,7 +47,8 @@ public class JenkinsGlue extends Notifier {
         final RevertMailSender mailer = new RevertMailSender(new RevertMailFormatter(changedRevisions), listener);
         final ChangeLocator changeLocator = new ChangeLocator(build, locationFinder, changedFiles );
         final CommitMessages commitMessages = new CommitMessages(build);
-        return Bouncer.throwOutIfUnstable(build, launcher, messenger, svnReverter, claimer, changeLocator, commitMessages, mailer);
+        final CommitCountRule commitCountRule = new CommitCountRule(build, getDescriptor().isRevertMultipleCommits());
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, svnReverter, claimer, changeLocator, commitMessages, mailer, commitCountRule);
     }
 
     @Extension
@@ -83,6 +84,7 @@ public class JenkinsGlue extends Notifier {
 
         public void setRevertMultipleCommits(final boolean newValue) {
             revertMultipleCommits = newValue;
+            save();
         }
 
     }

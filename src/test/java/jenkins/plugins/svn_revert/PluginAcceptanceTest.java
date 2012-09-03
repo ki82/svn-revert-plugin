@@ -20,6 +20,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 
+import jenkins.plugins.svn_revert.JenkinsGlue.SvnRevertDescriptorImpl;
+
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
@@ -55,11 +57,13 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     private SubversionSCM rootScm;
     private FreeStyleBuild currentBuild;
     private int jobCounter = 0;
+    private SvnRevertDescriptorImpl descriptor;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         givenSubversionScmWithOneModule();
+        descriptor = hudson.getDescriptorByType(SvnRevertDescriptorImpl.class);
     }
 
     public void testShouldNotRevertWhenNotSubversionSCM() throws Exception {
@@ -109,6 +113,7 @@ public class PluginAcceptanceTest extends HudsonTestCase {
     }
 
     public void testCanRevertMultipleRevisions() throws Exception {
+        descriptor.setRevertMultipleCommits(true);
         givenJobWithOneModule();
 
         currentBuild = whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges();
@@ -117,6 +122,18 @@ public class PluginAcceptanceTest extends HudsonTestCase {
         assertFileReverted(MODIFIED_FILE_IN_MODULE_1);
         assertLogContains(svnUrl, currentBuild);
         assertLogContains(TWO_REVERTED_REVISIONS, currentBuild);
+    }
+
+    public void testWillNotRevertMultipleRevisionsWhenConfiguredNotTo() throws Exception {
+        descriptor.setRevertMultipleCommits(false);
+        givenJobWithOneModule();
+
+        currentBuild = whenPreviousJobSuccesfulAndCurrentUnstableWithTwoChanges();
+
+        assertBuildStatus(UNSTABLE, currentBuild);
+        assertNothingRevertedSince(TWO_COMMITS);
+        assertLogContains(svnUrl, currentBuild);
+        assertLogContains(Messenger.TOO_MANY_CHANGES, currentBuild);
     }
 
     public void testWillNotRevertWhenFileHasChangedSinceBuildStarted() throws Exception {
