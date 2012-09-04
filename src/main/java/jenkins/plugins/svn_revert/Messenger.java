@@ -25,9 +25,9 @@ class Messenger {
     static final String SUBVERSION_EXCEPTION_DURING_REVERT =
             "Revert failed because of a Subversion error:";
     static final String SUBVERSION_ERROR_CODE = "Subversion Error Code: ";
-    public static final String COMMIT_MESSAGE_CONTAINS =
+    static final String COMMIT_MESSAGE_CONTAINS =
             "Will not revert since commit message contains '%s'.";
-    public static final String TOO_MANY_CHANGES =
+    static final String TOO_MANY_CHANGES =
             "Will not revert since there are multiple commits in the failing build.";
     private final PrintStream logger;
 
