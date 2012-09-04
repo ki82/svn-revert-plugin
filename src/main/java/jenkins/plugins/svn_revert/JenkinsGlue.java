@@ -12,7 +12,10 @@ import hudson.tasks.Publisher;
 
 import java.io.IOException;
 
+import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class JenkinsGlue extends Notifier {
 
@@ -44,11 +47,26 @@ public class JenkinsGlue extends Notifier {
         final RevertMailSender mailer = new RevertMailSender(new RevertMailFormatter(changedRevisions), listener);
         final ChangeLocator changeLocator = new ChangeLocator(build, locationFinder, changedFiles );
         final CommitMessages commitMessages = new CommitMessages(build);
-        return Bouncer.throwOutIfUnstable(build, launcher, messenger, svnReverter, claimer, changeLocator, commitMessages, mailer);
+        final CommitCountRule commitCountRule = new CommitCountRule(build, getDescriptor().isRevertMultipleCommits());
+        return Bouncer.throwOutIfUnstable(build, launcher, messenger, svnReverter, claimer, changeLocator, commitMessages, mailer, commitCountRule);
     }
 
     @Extension
     public static final class SvnRevertDescriptorImpl extends BuildStepDescriptor<Publisher> {
+
+        private boolean revertMultipleCommits;
+
+        public SvnRevertDescriptorImpl() {
+            revertMultipleCommits = false;
+            load();
+        }
+
+        @Override
+        public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
+            revertMultipleCommits = formData.containsKey("revertMultipleCommits");
+            save();
+            return super.configure(req, formData);
+        }
 
         @Override
         public boolean isApplicable(final Class<? extends AbstractProject> arg0) {
@@ -58,6 +76,15 @@ public class JenkinsGlue extends Notifier {
         @Override
         public String getDisplayName() {
             return "Reverts commits that breaks the build";
+        }
+
+        public boolean isRevertMultipleCommits() {
+            return revertMultipleCommits;
+        }
+
+        public void setRevertMultipleCommits(final boolean newValue) {
+            revertMultipleCommits = newValue;
+            save();
         }
 
     }

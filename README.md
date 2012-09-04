@@ -10,6 +10,10 @@ It currently only works for jobs with a **single module**, or with multiple modu
 Change Log
 ----------
 
+### 1.2
+
+- Option to revert changes only if build contains exactly one commit.
+
 ### 1.1 (August 29, 2012)
 
 - Builds with a commit having "revert" somewhere in the commit message will no longer revert anything.

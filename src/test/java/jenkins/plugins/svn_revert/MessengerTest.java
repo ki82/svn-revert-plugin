@@ -14,16 +14,18 @@ import org.tmatesoft.svn.core.SVNException;
 
 public class MessengerTest extends AbstractMockitoTestCase {
 
-    private static final SVNErrorCode ERROR_CODE = SVNErrorCode.UNKNOWN;
+    private Messenger messenger;
+
     @Mock
     private PrintStream logger;
     @Mock
     private Exception exception;
-    private Messenger messenger;
     @Mock
     private SVNException svnException;
     @Mock
     private SVNErrorMessage errorMessage;
+
+    private static final SVNErrorCode ERROR_CODE = SVNErrorCode.UNKNOWN;
 
     @Before
     public void setup() {
@@ -82,6 +84,12 @@ public class MessengerTest extends AbstractMockitoTestCase {
     public void logsNoChanges() throws Exception {
         messenger.informNoChanges();
         verify(logger).println(Messenger.NO_CHANGES);
+    }
+
+    @Test
+    public void logsTooManyChanges() throws Exception {
+        messenger.informTooManyChanges();
+        verify(logger).println(Messenger.TOO_MANY_CHANGES);
     }
 
     @Test
