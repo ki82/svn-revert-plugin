@@ -28,7 +28,7 @@ class Messenger {
     public static final String COMMIT_MESSAGE_CONTAINS =
             "Will not revert since commit message contains '%s'.";
     public static final String TOO_MANY_CHANGES =
-            "Will not revert multiple commits!";
+            "Will not revert since there are multiple commits in the failing build.";
     private final PrintStream logger;
 
     Messenger(final PrintStream logger) {
