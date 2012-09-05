@@ -57,7 +57,7 @@ public class JenkinsGlue extends Notifier {
         private boolean revertMultipleCommits;
 
         public SvnRevertDescriptorImpl() {
-            revertMultipleCommits = false;
+            revertMultipleCommits = true;
             load();
         }
 
