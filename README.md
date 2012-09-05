@@ -10,9 +10,9 @@ It currently only works for jobs with a **single module**, or with multiple modu
 Change Log
 ----------
 
-### 1.2
+### 1.2 (September 5, 2012)
 
-- Option to revert changes only if build contains exactly one commit.
+- Option to revert changes only if a broken build contains exactly one commit.
 
 ### 1.1 (August 29, 2012)
 
