@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>svn-revert-plugin</artifactId>
   <packaging>hpi</packaging>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
   <description>Automatically performs Subversion reverting when the build status changes to unstable or failed.</description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/SVN+Revert+Plugin</url>
   <parent>
