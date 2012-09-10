@@ -12,7 +12,7 @@ Change Log
 
 ### 1.3
 
-- Made Claim plugin integration/dependency optional
+- Made Claim plugin integration/dependency optional.
 
 ### 1.2 (September 5, 2012)
 
