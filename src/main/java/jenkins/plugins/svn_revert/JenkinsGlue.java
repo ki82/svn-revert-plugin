@@ -5,6 +5,7 @@ import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -43,7 +44,7 @@ public class JenkinsGlue extends Notifier {
         final ModuleFinder locationFinder = new ModuleFinder(build, listener);
         final SvnReverter svnReverter = new SvnReverter(build, messenger, new SvnKitClientFactory(),
                 locationFinder, changedRevisions);
-        final Claimer claimer = new Claimer(changedRevisions);
+        final Claimer claimer = new Claimer(changedRevisions, isClaimPluginPresent());
         final RevertMailSender mailer = new RevertMailSender(new RevertMailFormatter(changedRevisions), listener);
         final ChangeLocator changeLocator = new ChangeLocator(build, locationFinder, changedFiles );
         final CommitMessages commitMessages = new CommitMessages(build);
@@ -51,7 +52,15 @@ public class JenkinsGlue extends Notifier {
         return Bouncer.throwOutIfUnstable(build, launcher, messenger, svnReverter, claimer, changeLocator, commitMessages, mailer, commitCountRule);
     }
 
-    @Extension
+    private boolean isClaimPluginPresent() {
+        return isPluginPresent("claim");
+    }
+
+    private boolean isPluginPresent(final String pluginName) {
+        return Hudson.getInstance().getPlugin(pluginName) != null;
+    }
+
+    @Extension(optional = true)
     public static final class SvnRevertDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         private boolean revertMultipleCommits;

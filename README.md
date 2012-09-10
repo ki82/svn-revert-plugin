@@ -10,6 +10,10 @@ It currently only works for jobs with a **single module**, or with multiple modu
 Change Log
 ----------
 
+### 1.3
+
+- Made Claim plugin integration/dependency optional
+
 ### 1.2 (September 5, 2012)
 
 - Option to revert changes only if a broken build contains exactly one commit.

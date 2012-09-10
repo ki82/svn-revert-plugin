@@ -201,6 +201,7 @@
       <groupId>org.jvnet.hudson.plugins</groupId>
       <artifactId>claim</artifactId>
       <version>1.7</version>
+      <optional>true</optional>
     </dependency>
   </dependencies>
   <properties>
