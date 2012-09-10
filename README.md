@@ -10,7 +10,7 @@ It currently only works for jobs with a **single module**, or with multiple modu
 Change Log
 ----------
 
-### 1.3
+### 1.3 (September 10, 2012)
 
 - Made Claim plugin integration/dependency optional.
 
