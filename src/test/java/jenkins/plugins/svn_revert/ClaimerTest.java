@@ -1,6 +1,7 @@
 package jenkins.plugins.svn_revert;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import hudson.model.AbstractBuild;
 import hudson.plugins.claim.ClaimBuildAction;
@@ -56,6 +57,8 @@ public class ClaimerTest extends AbstractMockitoTestCase {
         givenClaimPluginNotPresent();
 
         claimer.claim(build);
+
+        verifyNoMoreInteractions(claimBuildAction);
     }
 
     private void givenClaimPluginNotPresent() {
